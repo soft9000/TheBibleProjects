@@ -17,21 +17,21 @@ Sharing is caring?
 # The Classic Scriptures
 Application: Desktop GUI
 
-Technologies: Java 
+Technologies: Java + DIY, self-extracting database
 
 Bible: King James Old & New
 
 # The Sierra Bible
 Application: Desktop GUI
 
-Technologies: Java 
+Technologies: Java + DIY, self-extracting database
 
 Bible: The "Stick of Joseph"  ;-)
 
 # BibliaWeb
 Application: Web Site
 
-Technologies: Python + AJAX
+Technologies: Python, SQLite, HTML, CSS3, Javascript & AJAX
 
 Bible: Either / Both of above
 
