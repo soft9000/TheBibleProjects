@@ -1,0 +1,12 @@
+2020/07/31: 04.40.08 (LOCAL)	biblia.sql generated from BookDb.bin
+2020/07/31: 04.40.48 (LOCAL)	... From SierraBible8 ...
+2020/07/31: 04.48.44 (LOCAL)	Restored biblia.sql into biblia.sqlt3
+2020/07/31: 05.07.47 (LOCAL)	Project cloned to in C:\d_drive\USR\code\java2019\biblia
+2020/07/31: 05.23.43 (LOCAL)	Dropped the paragraph marking. It is redundant.
+2020/07/31: 06.00.34 (LOCAL)	Down to one VerseMarker. Fully qualified book names.
+2020/07/31: 06.00.34 (LOCAL)	2020_07_31_Biblia.zip .dumped & saved to *tqft.all.
+2020/07/31: 11.16.45 (LOCAL)	start.py
+2020/08/01: 13.58.02 (LOCAL)	Ajax enables ALL THREE regions.
+2020/08/09: 13.55.51 (LOCAL)	Added main menu. Tightened-up styles.
+2020/08/18: 06.43.24 (LOCAL)	Finished it up - Functionally works great. Refectoring for maintenance, next.
+2020/08/19: 02.58.36 (LOCAL)	Uploaded to saintbook.org
