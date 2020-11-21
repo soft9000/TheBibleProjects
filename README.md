@@ -16,12 +16,22 @@ Sharing is caring?
 
 # The Classic Scriptures
 Application: Desktop GUI
-King James Old & New
+
+Technologies: Java 
+
+Bible: King James Old & New
 
 # The Sierra Bible
 Application: Desktop GUI
-The "Stick of Joseph"  ;-)
+
+Technologies: Java 
+
+Bible: The "Stick of Joseph"  ;-)
 
 # BibliaWeb
 Application: Web Site
-Python + AJAX
+
+Technologies: Python + AJAX
+
+Bible: Either / Both of above
+
