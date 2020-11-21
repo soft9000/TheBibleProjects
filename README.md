@@ -13,3 +13,15 @@ Indeed, in order to share the warm-and-fuzzy feelings with any who might might b
 Here is where I share the best of those.
 
 Sharing is caring?
+
+# The Classic Scriptures
+Application: Desktop GUI
+King James Old & New
+
+# The Sierra Bible
+Application: Desktop GUI
+The "Stick of Joseph"  ;-)
+
+# BibliaWeb
+Application: Web Site
+Python + AJAX
