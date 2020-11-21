@@ -1,3 +1,5 @@
+**The Classic Scriptures** is as DESKTOP application. You will need Java 1.6 or greater to enjoy the graphical user interface.
+
 The Classic Scriptures includes:
 
 King's James Old Testament
