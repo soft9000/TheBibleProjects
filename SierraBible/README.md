@@ -1,3 +1,6 @@
+**The Sierra Bible** is as DESKTOP application. You will need Java 1.6 or greater to enjoy the graphical user interface.
+
+
 **WARNING:** My favorite scripture set includes:
 
 King's James Old Testament
