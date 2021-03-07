@@ -1,4 +1,4 @@
-# TheBibleProjects
+# The Bible Projects
 
 Pure religion has nothing to do with me controlling you - it has to do with God, controlling me. 
 
