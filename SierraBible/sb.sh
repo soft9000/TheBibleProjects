@@ -1,1 +1,1 @@
-java -jar SierraBible5.jar
+java -jar ./SierraBible5.jar
