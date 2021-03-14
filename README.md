@@ -35,3 +35,11 @@ Technologies: Python, SQLite, HTML, CSS3, Javascript & AJAX
 
 Bible: Either / Both of above
 
+# PyKJV (WORK IN PROGRESS!)
+Application: Console Application (Universal UI!)
+
+Technologies: Python, SQLite, Classic / Console TUI
+
+Bible: Either / Both of above
+
+
