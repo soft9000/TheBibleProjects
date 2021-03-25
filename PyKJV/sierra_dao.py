@@ -2,13 +2,14 @@
 File: sierra_dao.py
 Problem Domain: Database / DAO
 Status: PRODUCTION / STABLE
-Revision: 1.0
+Revision: 1.5
 
 Source: 
 https://github.com/soft9000/TheBibleProjects/tree/main/BibliaWeb/cgi-bin
 
 '''
 import sys
+import sqlite3
 
 
 class SierraDAO:
@@ -98,3 +99,42 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
             print(ex, file=sys.stderr)
             raise ex
         return None
+
+    
+    @staticmethod
+    def GetDAO(bSaints=False):
+        ''' Connect to the database & return the DAO '''
+        conn = sqlite3.connect("./biblia.sqlt3")
+        # conn.row_factory = dict_factory
+        curs = conn.cursor()
+        dao = SierraDAO(curs, bSaints)
+        return dao
+
+    
+    @staticmethod
+    def ListBooks(bSaints=False) -> list():
+        ''' Get the major books '''
+        results = list()
+        dao = SierraDAO.GetDAO(bSaints)
+        if not dao:
+            return results
+        books = dao.search_books()
+        if not books:
+            return results
+        return books
+
+
+if __name__ == "__main__":
+    ''' Ye Olde Testing '''
+    from verse import Verse
+    for ss, row in enumerate(SierraDAO.ListBooks(True), 1):
+        print(ss, row)
+    for ss, row in enumerate(SierraDAO.ListBooks(True), 1):
+        print(ss * 1000, row)
+    dao = SierraDAO.GetDAO()
+    v = Verse()
+    for row in dao.search("verse LIKE '%PERFECT%'"):
+        line = row['text']
+        print(v.center(' {0} {1}:{2} '.format(row['book'],row['chapter'],row['verse']), '='))
+        for row in v.wrap(line):
+            print(row)
