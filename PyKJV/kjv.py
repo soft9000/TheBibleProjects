@@ -15,15 +15,19 @@ NEXUS
 https://github.com/soft9000/TheBibleProjects
 '''
 
+import sqlite3
 import argparse
+from verse import Verse
 from sierra_dao import SierraDAO
 
 
-def dum():
+def say_done():
+    ''' What we see whenever we're done. '''
     print('(done)')
 
 
-def do_func(prompt, options, level):
+def do_menu(prompt, options, level):
+    ''' The menu loop - nice for nesting 'till we're done. '''
     choice = None
     while choice != options[-1][0]:
         print(level * 15)
@@ -41,37 +45,43 @@ def do_func(prompt, options, level):
 
 
 def do_book_cv():
+    ''' Locate book:chapter:verse '''
     pass
 
 
 def do_book_vnum():
+    ''' Locate by a 1's based sierra verse number '''
     pass
 
 
-def do_search():
+def do_lookups():
+    ''' The ways to lookup books & verses '''
     options = [
     ("b", "List Books", do_list),
     ("c", "book:chapter:verse", do_book_cv),
     ("a", "absolute verse #", do_book_vnum),
-    ("q", "Quit", dum)
+    ("q", "Quit", say_done)
     ]
-    do_func("Search Menu: ", options, '?')
+    do_menu("Search Menu: ", options, '?')
 
 
 def do_list():
-    pass
+    for line in Verse().list_books():
+        print(f' | {line} |')
 
 
 def do_random():
-    pass
+    lines = Verse().random()
+    for line in lines:
+        print(line)
 
 
 options = [
     ("r", "Random Verse", do_random),
     ("b", "List Books", do_list),
-    ("s", "Search", do_search),
-    ("q", "Quit", dum)
+    ("s", "Search", do_lookups),
+    ("q", "Quit", say_done)
 ]
 
-do_func("Main Menu: ", options, '#')
+do_menu("Main Menu: ", options, '#')
 print(".")

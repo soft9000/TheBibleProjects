@@ -1,13 +1,20 @@
 '''
+Mission: Encapsulate, query & support an enumerated
+verse-based, as well as a chapter-and-verse,
+content-searching paradigm.
+
 File: sierra_dao.py
 Problem Domain: Database / DAO
 Status: PRODUCTION / STABLE
 Revision: 1.5
 
-Source: 
-https://github.com/soft9000/TheBibleProjects/tree/main/BibliaWeb/cgi-bin
-
+Note: A "sierra verse number" is a 1's based quote/verse
+content-identification system. Sierra verse numbers can be
+handy in cases where - like here - we crave a more succinct 
+way of referring to those classic book:chapter:verse identifiers.
 '''
+import os
+import os.path
 import sys
 import sqlite3
 
@@ -20,7 +27,7 @@ class SierraDAO:
         self.conn = cursor
         self.bSaints = bSaints
         self.sql_sel = "SELECT Verse, Book, BookChapterID, BookVerseID, V.ID, BookID \
-FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID) AND {zmatch} ORDER BY V.ID;"
+FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER BY V.ID;"
 
     def source(self):
         result = {
@@ -30,7 +37,18 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID) AND {zmatch} ORDER 
             "verse":None,
             "text":None,
            }
-        return result
+        return dict(result)
+
+   
+    def random(self, bSaints = False):
+        import random
+        verse = 0
+        if bSaints:
+            verse = random.randrange(1, 37701)
+        else:
+            verse = random.randrange(1, 31103)
+        return verse
+
 
     def classic2sierra(self, book, chapt, verse):
         # print([book, chapt, verse], file=sys.stderr)
@@ -47,26 +65,29 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
             raise
         return None
             
-    def search_verse(self, sierra_num):
+    def search_verse(self, sierra_num) -> dict():
         ''' Lookup a single sierra verse number. Presently unloved. '''
-        for result in self.search(f"V.ID={sierra_num} LIMIT 1"):
-            yield result
+        rows = self.search(f" V.ID={sierra_num} ")
+        if not rows:
+            return self.source()
+        for row in rows:
+            return row
 
-    def search_books(self):
+    def list_books(self) -> str():
         ''' Locate the book inventory - Name of book, only '''
         cmd = "SELECT Book FROM SqlBooks ORDER BY ID;"
         res = self.conn.execute(cmd)
-        response = self.source()
+        response = ''
         try:
             zrow = res.fetchone()
             while zrow:
-                response['book'] = zrow[0]
+                response = zrow[0]
                 if zrow[0].find('.') != -1:
                     cols = zrow[0].split('.')
                     if self.bSaints == False and cols[1] != 'nt' and cols[1] != 'ot':
                         zrow = res.fetchone()
                         continue
-                    response['book'] = cols[2]
+                    response = cols[2]
                 yield response
                 zrow = res.fetchone()
         except Exception as ex:
@@ -104,7 +125,15 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
     @staticmethod
     def GetDAO(bSaints=False):
         ''' Connect to the database & return the DAO '''
-        conn = sqlite3.connect("./biblia.sqlt3")
+        db = "biblia.sqlt3"
+        if os.path.exists("./" + db):
+            db = "./" + db
+        else:
+            db = "./PyKJV/" + db
+        if not os.path.exists(db):
+            print("Error: Unable to locate database")
+            quit()
+        conn = sqlite3.connect(db)
         # conn.row_factory = dict_factory
         curs = conn.cursor()
         dao = SierraDAO(curs, bSaints)
@@ -112,17 +141,20 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
 
     
     @staticmethod
-    def ListBooks(bSaints=False) -> list():
-        ''' Get the major books '''
-        results = list()
+    def ListBooks(bSaints=False) -> str():
+        ''' Get the major book names '''
         dao = SierraDAO.GetDAO(bSaints)
         if not dao:
-            return results
-        books = dao.search_books()
-        if not books:
-            return results
-        return books
-
+            return None
+        books = dao.list_books()
+        for book in books:
+            yield book
+    
+    @staticmethod
+    def ListBookTags(bSaints=False) -> str():
+        ''' Get the major book tokens '''
+        for name in SierraDAO.ListBooks():
+            yield name.replace(' ', '')[0:4]
 
 if __name__ == "__main__":
     ''' Ye Olde Testing '''
