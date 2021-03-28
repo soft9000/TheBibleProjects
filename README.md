@@ -42,4 +42,16 @@ Technologies: Python, SQLite, Classic / Console TUI
 
 Bible: Either / Both of above
 
+STATUS:
+- DOBE: Random Verse
+- DOBE: List Books
+- SOON: CLI (argparse) by Mr. Bear
+- NEXT: Verse Lookup (Sierra)
+- NEXT: Verse Lookup (Classic)
+- NEXT: Bookmarking (unary)
+- NEXT: Book Reading
+- NEXT: Verse Bookmarks (multiple)
+- More soon! \o/
+
+
 

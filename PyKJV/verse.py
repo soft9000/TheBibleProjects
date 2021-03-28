@@ -20,7 +20,7 @@ class Verse:
     
     def get_verse(self, verse) -> str():
         dao = SierraDAO.GetDAO()
-        verse = dao.search_verse(verse)
+        verse = dao.get_sierra(verse)
         view = Verse()
         if not verse:
             return view.wrap("(none)")

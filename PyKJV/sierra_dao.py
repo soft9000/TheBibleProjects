@@ -48,15 +48,40 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         else:
             verse = random.randrange(1, 31103)
         return verse
+    
+    def get_book_title(self, book_name):
+        dao = SierraDAO.GetDAO(True)
+        if not dao:
+            return None
+        for book in dao.list_books():
+            pass
 
 
-    def classic2sierra(self, book, chapt, verse):
-        # print([book, chapt, verse], file=sys.stderr)
-        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
-WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}' LIMIT 1;"
+    def get_book_id(self, book_name):
+        if isinstance(book_name, int()):
+            return book_name
+        if len(book_name) > 5:
+            book_name = get_book_title(book_name)
+        cmd = f"SELECT ID FROM SqlBooks WHERE LIMIT 1;"
         print(cmd, file=sys.stderr)
-        res = self.conn.execute(cmd)
         try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchone()
+            print(zrow, file=sys.stderr)
+            if zrow:
+                return zrow[0]
+        except:
+            raise
+        return None
+
+    def classic2sierra(self, book_num, chapt, verse):
+        if isinstance(book_num, ''):
+            book_num = self.get_book_id(book_num)
+        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
+WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}') LIMIT 1;"
+        print(cmd, file=sys.stderr)
+        try:
+            res = self.conn.execute(cmd)
             zrow = res.fetchone()
             print(zrow, file=sys.stderr)
             if zrow:
@@ -65,13 +90,31 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
             raise
         return None
             
-    def search_verse(self, sierra_num) -> dict():
-        ''' Lookup a single sierra verse number. Presently unloved. '''
+    def get_sierra(self, sierra_num) -> dict():
+        ''' Lookup a single sierra verse number. '''
         rows = self.search(f" V.ID={sierra_num} ")
-        if not rows:
-            return self.source()
-        for row in rows:
-            return row
+        if rows:
+            for row in rows:
+                return row
+        return self.source()
+
+    def list_book_table(self):
+        ''' Locate the book inventory - Complete row Dictionary '''
+        cmd = "SELECT ID, Book, BookMeta FROM SqlBooks ORDER BY ID;"
+        res = self.conn.execute(cmd)
+        try:
+            zrow = res.fetchone()
+            while zrow:
+                result = dict()
+                result['ID'] = zrow[0]
+                result['Book'] = zrow[1]
+                result['BookMeta'] = zrow[2]
+                yield result
+                zrow = res.fetchone()
+        except Exception as ex:
+            print(ex, file=sys.stderr)
+            raise ex
+        return None
 
     def list_books(self) -> str():
         ''' Locate the book inventory - Name of book, only '''
@@ -155,18 +198,3 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
         ''' Get the major book tokens '''
         for name in SierraDAO.ListBooks():
             yield name.replace(' ', '')[0:4]
-
-if __name__ == "__main__":
-    ''' Ye Olde Testing '''
-    from verse import Verse
-    for ss, row in enumerate(SierraDAO.ListBooks(True), 1):
-        print(ss, row)
-    for ss, row in enumerate(SierraDAO.ListBooks(True), 1):
-        print(ss * 1000, row)
-    dao = SierraDAO.GetDAO()
-    v = Verse()
-    for row in dao.search("verse LIKE '%PERFECT%'"):
-        line = row['text']
-        print(v.center(' {0} {1}:{2} '.format(row['book'],row['chapter'],row['verse']), '='))
-        for row in v.wrap(line):
-            print(row)
