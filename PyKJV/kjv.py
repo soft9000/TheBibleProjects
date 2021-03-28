@@ -26,8 +26,8 @@ def say_done():
     print('(done)')
 
 
-def do_menu(prompt, options, level):
-    ''' The menu loop - nice for nesting 'till we're done. '''
+'''def do_menu(prompt, options, level):
+    """ The menu loop - nice for nesting 'till we're done. """
     choice = None
     while choice != options[-1][0]:
         print(level * 15)
@@ -42,7 +42,27 @@ def do_menu(prompt, options, level):
             if o[0] == choice:
                 o[2]()
                 break
-
+'''
+def do_menu(prompt, options, level):
+    choice = True
+    while choice == True:
+        print(level * 15)
+        if options.lower() == "r" or options.lower() == "-r":
+            do_random()
+            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
+        elif options.lower() == "l" or options.lower() == "-l":
+            do_list()
+            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
+        elif options.lower() == "s" or options.lower() == "-s":
+            do_lookups()
+            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
+        elif options.lower() == "q" or options.lower() == "-q":
+            options =say_done()
+            choice = False
+        else:
+            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
+            continue
+    
 
 def do_book_cv():
     ''' Locate book:chapter:verse '''
@@ -74,14 +94,38 @@ def do_random():
     lines = Verse().random()
     for line in lines:
         print(line)
+#Evan Nagy
+def Cmd_Line_Args():
+    #Evan Nagy
+    HelpInformation = "This Bible Software provides allows you to search the bible for specific verses"
+    parse = argparse.ArgumentParser(usage='',description=HelpInformation)
+    Parser = parse.add_mutually_exclusive_group()
+    Parser.add_argument("-r","--Random",action="store_true",help="Search for a random verse in the bible")
+    Parser.add_argument("-l","--List",action="store_true",help="List the books included in this software")
+    Parser.add_argument("-s","--Search",action="store_true",help="Search for a specific verse in the bible")
+    Parser.add_argument("-q","--Quit",action="store_true",help="Quits the program all together")
+    args = parse.parse_args()
 
+    option = ""
 
-options = [
+    if args.Random == True:
+        option = "r"
+    elif args.List == True:
+        option = "l"
+    elif args.Search == True:
+        option = "s"
+    elif args.Quit == True:
+        option = "q"
+    return option
+
+'''options = [
     ("r", "Random Verse", do_random),
     ("b", "List Books", do_list),
     ("s", "Search", do_lookups),
     ("q", "Quit", say_done)
-]
+]'''
 
-do_menu("Main Menu: ", options, '#')
+option = Cmd_Line_Args()
+
+do_menu("Main Menu: ", option, '#')
 print(".")
