@@ -20,21 +20,6 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID) AND {zmatch} ORDER 
             "text":None,
            }
         return result
-
-    def classic2sierra(self, book, chapt, verse):
-        # print([book, chapt, verse], file=sys.stderr)
-        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
-WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}' LIMIT 1;"
-        print(cmd, file=sys.stderr)
-        res = self.conn.execute(cmd)
-        try:
-            zrow = res.fetchone()
-            print(zrow, file=sys.stderr)
-            if zrow:
-                return zrow[0]
-        except:
-            raise
-        return None
             
     def search_verse(self, sierra_num):
         ''' Lookup a single sierra verse number. Presently unloved. '''
@@ -89,5 +74,69 @@ WHERE (B.ID=BookID) AND BOOK LIKE '%{book}%' AND BookChapterID='{chapt}' AND Boo
             raise ex
         return None
 
+    def classic2sierra(self, book_num, chapt, verse):
+        if isinstance(book_num, ''):
+            book_num = self.get_book_id(book_num)
+        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
+WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}') LIMIT 1;"
 
+        print(cmd, file=sys.stderr)
+        try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchone()
+            print(zrow, file=sys.stderr)
+            if zrow:
+                return zrow[0]
+        except:
+            raise
+        return None
+
+    def get_book_title(self, book_name):
+        dao = SierraDAO.GetDAO(True)
+        if not dao:
+            return None
+        for book in dao.list_books():
+            pass
+
+    def get_book_id(self, book_name):
+        if isinstance(book_name, int()):
+            return book_name
+        if len(book_name) > 5:
+            book_name = get_book_title(book_name)
+        cmd = f"SELECT ID FROM SqlBooks WHERE LIMIT 1;"
+        print(cmd, file=sys.stderr)
+        try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchone()
+            print(zrow, file=sys.stderr)
+            if zrow:
+                return zrow[0]
+        except:
+            raise
+        return None
+
+    @staticmethod
+    def GetBookId(book_name):
+        ''' Return the ID for either a Name or a Token '''
+        cmd = "SELECT ID FROM SqlBooks WHERE "
+        if len(book_name) > 4:
+            cmd += f'TOKEN = "{book_name}"'
+        else:
+            cmd += f'Book = "{book_name}"'
+        cmd += " LIMIT 1;"
+        dao = SierraDAO.GetDAO(True)
+
+    @staticmethod
+    def IsValidVerse(cvn):
+        ''' Its the reference valid? (string plus two integers) '''
+        cols = cvn.split(':')
+        if len(cols) is 3:
+            try:
+                chapt = int(cols[1])
+                verse = int(cols[2])
+                book  = GetBookId(cols[0])
+                return True
+            except:
+                pass
+        return False        
 

@@ -22,7 +22,7 @@ import sqlite3
 class SierraDAO:
     ''' Extract a nominal PROBLEM DOMAIN dictionary,
         from the database. Partial S3D2 pattern.'''
-    
+        
     def __init__(self, cursor, bSaints=False):
         self.conn = cursor
         self.bSaints = bSaints
@@ -31,16 +31,15 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
 
     def source(self):
         result = {
-            "sierra":None,
-            "book":None,
-            "chapter":None,
-            "verse":None,
-            "text":None,
-           }
+            "sierra": None,
+            "book": None,
+            "chapter": None,
+            "verse": None,
+            "text": None,
+        }
         return dict(result)
 
-   
-    def random(self, bSaints = False):
+    def random(self, bSaints=False):
         import random
         verse = 0
         if bSaints:
@@ -48,48 +47,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         else:
             verse = random.randrange(1, 31103)
         return verse
-    
-    def get_book_title(self, book_name):
-        dao = SierraDAO.GetDAO(True)
-        if not dao:
-            return None
-        for book in dao.list_books():
-            pass
 
-
-    def get_book_id(self, book_name):
-        if isinstance(book_name, int()):
-            return book_name
-        if len(book_name) > 5:
-            book_name = get_book_title(book_name)
-        cmd = f"SELECT ID FROM SqlBooks WHERE LIMIT 1;"
-        print(cmd, file=sys.stderr)
-        try:
-            res = self.conn.execute(cmd)
-            zrow = res.fetchone()
-            print(zrow, file=sys.stderr)
-            if zrow:
-                return zrow[0]
-        except:
-            raise
-        return None
-
-    def classic2sierra(self, book_num, chapt, verse):
-        if isinstance(book_num, ''):
-            book_num = self.get_book_id(book_num)
-        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
-WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}') LIMIT 1;"
-        print(cmd, file=sys.stderr)
-        try:
-            res = self.conn.execute(cmd)
-            zrow = res.fetchone()
-            print(zrow, file=sys.stderr)
-            if zrow:
-                return zrow[0]
-        except:
-            raise
-        return None
-            
     def get_sierra(self, sierra_num) -> dict():
         ''' Lookup a single sierra verse number. '''
         rows = self.search(f" V.ID={sierra_num} ")
@@ -100,7 +58,7 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
 
     def list_book_table(self):
         ''' Locate the book inventory - Complete row Dictionary '''
-        cmd = "SELECT ID, Book, BookMeta FROM SqlBooks ORDER BY ID;"
+        cmd = "SELECT ID, Book, BookMeta, Token FROM SqlBooks ORDER BY ID;"
         res = self.conn.execute(cmd)
         try:
             zrow = res.fetchone()
@@ -109,6 +67,8 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
                 result['ID'] = zrow[0]
                 result['Book'] = zrow[1]
                 result['BookMeta'] = zrow[2]
+                result['Token'] = result['Book'].split('.')[2].replace(
+                    ' ', '')[0:4]
                 yield result
                 zrow = res.fetchone()
         except Exception as ex:
@@ -127,7 +87,8 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
                 response = zrow[0]
                 if zrow[0].find('.') != -1:
                     cols = zrow[0].split('.')
-                    if self.bSaints == False and cols[1] != 'nt' and cols[1] != 'ot':
+                    if self.bSaints == False and cols[1] != 'nt' and cols[
+                            1] != 'ot':
                         zrow = res.fetchone()
                         continue
                     response = cols[2]
@@ -137,7 +98,7 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
             print(ex, file=sys.stderr)
             raise ex
         return None
-    
+
     def search(self, where_clause):
         ''' Search using a LIKE-match - one or many. '''
         cmd = self.sql_sel.replace('{zmatch}', where_clause)
@@ -150,7 +111,8 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
                 response['book'] = zrow[1]
                 if zrow[1].find('.') != -1:
                     cols = zrow[1].split('.')
-                    if self.bSaints == False and cols[1] != 'nt' and cols[1] != 'ot':
+                    if self.bSaints == False and cols[1] != 'nt' and cols[
+                            1] != 'ot':
                         zrow = res.fetchone()
                         continue
                     response['book'] = cols[2]
@@ -164,7 +126,76 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
             raise ex
         return None
 
-    
+
+    def classic2sierra(self, book_num, chapt, verse):
+        if isinstance(book_num, ''):
+            book_num = self.get_book_id(book_num)
+        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
+WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}') LIMIT 1;"
+
+        print(cmd, file=sys.stderr)
+        try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchone()
+            print(zrow, file=sys.stderr)
+            if zrow:
+                return zrow[0]
+        except:
+            raise
+        return None
+
+    def get_book_title(self, book_name):
+        dao = SierraDAO.GetDAO(True)
+        if not dao:
+            return None
+        for book in dao.list_books():
+            pass
+
+    def get_book_id(self, book_name):
+        if isinstance(book_name, int()):
+            return book_name
+        if len(book_name) > 5:
+            book_name = get_book_title(book_name)
+        cmd = f"SELECT ID FROM SqlBooks WHERE LIMIT 1;"
+        print(cmd, file=sys.stderr)
+        try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchone()
+            print(zrow, file=sys.stderr)
+            if zrow:
+                return zrow[0]
+        except:
+            raise
+        return None
+
+    @staticmethod
+    def GetBookId(book_name):
+        ''' Return the ID for either a Name or a Token '''
+        cmd = "SELECT ID FROM SqlBooks WHERE "
+        if len(book_name) > 4:
+            cmd += f'TOKEN = "{book_name}"'
+        else:
+            cmd += f'Book = "{book_name}"'
+        cmd += " LIMIT 1;"
+        dao = SierraDAO.GetDAO(True)
+        # TODO: Get the book ID for the book-name
+
+    @staticmethod
+    def IsValidVerse(cvn):
+        ''' Its the reference valid? (string plus two integers) '''
+        cols = cvn.split(':')
+        if len(cols) is 3:
+            try:
+                chapt = int(cols[1])
+                verse = int(cols[2])
+                book  = GetBookId(cols[0])
+                book = SierraDAO.GetBookId(book)
+                # TODO: Convert book name to book ID, return set ina dict.
+                return True
+            except:
+                pass
+        return False        
+
     @staticmethod
     def GetDAO(bSaints=False):
         ''' Connect to the database & return the DAO '''
@@ -182,7 +213,6 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
         dao = SierraDAO(curs, bSaints)
         return dao
 
-    
     @staticmethod
     def ListBooks(bSaints=False) -> str():
         ''' Get the major book names '''
@@ -192,7 +222,7 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
         books = dao.list_books()
         for book in books:
             yield book
-    
+
     @staticmethod
     def ListBookTags(bSaints=False) -> str():
         ''' Get the major book tokens '''

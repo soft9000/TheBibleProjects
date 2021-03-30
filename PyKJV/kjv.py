@@ -26,7 +26,7 @@ def say_done():
     print('(done)')
 
 
-'''def do_menu(prompt, options, level):
+def do_menu(prompt, options, level):
     """ The menu loop - nice for nesting 'till we're done. """
     choice = None
     while choice != options[-1][0]:
@@ -42,31 +42,17 @@ def say_done():
             if o[0] == choice:
                 o[2]()
                 break
-'''
-def do_menu(prompt, options, level):
-    choice = True
-    while choice == True:
-        print(level * 15)
-        if options.lower() == "r" or options.lower() == "-r":
-            do_random()
-            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
-        elif options.lower() == "l" or options.lower() == "-l":
-            do_list()
-            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
-        elif options.lower() == "s" or options.lower() == "-s":
-            do_lookups()
-            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
-        elif options.lower() == "q" or options.lower() == "-q":
-            options =say_done()
-            choice = False
-        else:
-            options =input('r Random Verse\nb List Books\ns Search\nq Quit\nMain Menu:')
-            continue
-    
+
 
 def do_book_cv():
     ''' Locate book:chapter:verse '''
-    pass
+    while True:
+        cvn = input("Enter chap:book#:vers# = ").strip()
+        if SierraDAO.IsValidVerse(cvn):
+            pass
+        # TODO: Finish up!
+        break
+    print("Work in progress: Soon!")
 
 
 def do_book_vnum():
@@ -76,13 +62,11 @@ def do_book_vnum():
 
 def do_lookups():
     ''' The ways to lookup books & verses '''
-    options = [
-    ("b", "List Books", do_list),
-    ("c", "book:chapter:verse", do_book_cv),
-    ("a", "absolute verse #", do_book_vnum),
-    ("q", "Quit", say_done)
-    ]
-    do_menu("Search Menu: ", options, '?')
+    options = [("b", "List Books", do_list),
+               ("c", "book:chapter:verse", do_book_cv),
+               ("a", "absolute verse #", do_book_vnum),
+               ("q", "Quit", say_done)]
+    do_menu("Search Menu: Option = ", options, '?')
 
 
 def do_list():
@@ -94,18 +78,25 @@ def do_random():
     lines = Verse().random()
     for line in lines:
         print(line)
-#Evan Nagy
-def Cmd_Line_Args():
-    #Evan Nagy
-    HelpInformation = "This Bible Software provides allows you to search the bible for specific verses"
-    parse = argparse.ArgumentParser(usage='',description=HelpInformation)
-    Parser = parse.add_mutually_exclusive_group()
-    Parser.add_argument("-r","--Random",action="store_true",help="Search for a random verse in the bible")
-    Parser.add_argument("-l","--List",action="store_true",help="List the books included in this software")
-    Parser.add_argument("-s","--Search",action="store_true",help="Search for a specific verse in the bible")
-    Parser.add_argument("-q","--Quit",action="store_true",help="Quits the program all together")
-    args = parse.parse_args()
 
+
+def parse_cmd_line():
+    HelpInformation = "kjv.py: Search, bookmark & browse the Bible."
+    parse = argparse.ArgumentParser(usage='', description=HelpInformation)
+    Parser = parse.add_mutually_exclusive_group()
+    Parser.add_argument("-r",
+                        "--Random",
+                        action="store_true",
+                        help="Search for a random verse in the bible")
+    Parser.add_argument("-l",
+                        "--List",
+                        action="store_true",
+                        help="List the books included in this software")
+    Parser.add_argument("-s",
+                        "--Search",
+                        action="store_true",
+                        help="Search for a specific verse in the bible")
+    args = parse.parse_args()
     option = ""
 
     if args.Random == True:
@@ -114,18 +105,19 @@ def Cmd_Line_Args():
         option = "l"
     elif args.Search == True:
         option = "s"
-    elif args.Quit == True:
-        option = "q"
     return option
 
-'''options = [
-    ("r", "Random Verse", do_random),
-    ("b", "List Books", do_list),
-    ("s", "Search", do_lookups),
-    ("q", "Quit", say_done)
-]'''
 
-option = Cmd_Line_Args()
-
-do_menu("Main Menu: ", option, '#')
+option = parse_cmd_line()
+if option:
+    if option == "r":
+        do_random()
+    elif option == "l":
+        do_list()
+    elif option == "s":
+        do_lookups()
+else:
+    options = [("r", "Random Verse", do_random), ("b", "List Books", do_list),
+               ("s", "Search", do_lookups), ("q", "Quit", say_done)]
+    do_menu("Main Menu: Option = ", options, 15)
 print(".")
