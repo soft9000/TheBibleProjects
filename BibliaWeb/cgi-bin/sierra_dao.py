@@ -74,23 +74,6 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID) AND {zmatch} ORDER 
             raise ex
         return None
 
-    def classic2sierra(self, book_num, chapt, verse):
-        if isinstance(book_num, ''):
-            book_num = self.get_book_id(book_num)
-        cmd = f"SELECT V.ID FROM SqlTblVerse AS V JOIN SqlBooks as B \
-WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND BookVerseID='{verse}') LIMIT 1;"
-
-        print(cmd, file=sys.stderr)
-        try:
-            res = self.conn.execute(cmd)
-            zrow = res.fetchone()
-            print(zrow, file=sys.stderr)
-            if zrow:
-                return zrow[0]
-        except:
-            raise
-        return None
-
     def get_book_title(self, book_name):
         dao = SierraDAO.GetDAO(True)
         if not dao:
