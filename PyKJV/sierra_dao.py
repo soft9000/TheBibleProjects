@@ -22,7 +22,6 @@ import sqlite3
 class SierraDAO:
     ''' Extract a nominal PROBLEM DOMAIN dictionary,
         from the database. Partial S3D2 pattern.'''
-        
     def __init__(self, cursor, bSaints=False):
         self.conn = cursor
         self.bSaints = bSaints
@@ -57,7 +56,8 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         return self.source()
 
     def list_book_table(self):
-        ''' Locate the book inventory - Complete row Dictionary '''
+        ''' Locate the book inventory.
+        Return a complete row dictionary when found, else None. '''
         cmd = "SELECT ID, Book, BookMeta, Token FROM SqlBooks ORDER BY ID;"
         res = self.conn.execute(cmd)
         try:
@@ -67,8 +67,8 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
                 result['ID'] = zrow[0]
                 result['Book'] = zrow[1]
                 result['BookMeta'] = zrow[2]
-                result['Token'] = result['Book'].split('.')[2].replace(
-                    ' ', '')[0:4]
+                result['Title'] = result['Book'].split('.')[2]
+                result['Token'] = zrow[3]
                 yield result
                 zrow = res.fetchone()
         except Exception as ex:
@@ -77,7 +77,9 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         return None
 
     def list_books(self) -> str():
-        ''' Locate the book inventory - Name of book, only '''
+        ''' Enumerate through each book in the database.
+        Return the full name of the book, only.
+        Return None if not found. '''
         cmd = "SELECT Book FROM SqlBooks ORDER BY ID;"
         res = self.conn.execute(cmd)
         response = ''
@@ -126,7 +128,6 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             raise ex
         return None
 
-
     def classic2sierra(self, book_num, chapt, verse):
         if isinstance(book_num, ''):
             book_num = self.get_book_id(book_num)
@@ -144,24 +145,29 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
             raise
         return None
 
-    def get_book_title(self, book_name):
+    def get_book_title(self, book_name) -> str():
+        ''' Return the full book-name for a short, or long, book name. 
+        Return None if the book_name is not in the database. '''
         dao = SierraDAO.GetDAO(True)
         if not dao:
             return None
-        for book in dao.list_books():
-            pass
+        zup = book_name.strip().upper()
+        for book in dao.list_book_table():
+            if zup == book['Title'].strip().upper():
+                return book['Title']
+            if zup == book['Token'].strip().upper():
+                return book['Title']
+        return None
 
     def get_book_id(self, book_name):
-        if isinstance(book_name, int()):
-            return book_name
-        if len(book_name) > 5:
-            book_name = get_book_title(book_name)
-        cmd = f"SELECT ID FROM SqlBooks WHERE LIMIT 1;"
-        print(cmd, file=sys.stderr)
+        ''' Return the database ID from EITHER a book token, or name. 
+        Return None if not found / error.'''
+        if len(book_name) < 5:
+            book_name = self.get_book_title(book_name)
+        cmd = f"SELECT ID FROM SqlBooks WHERE Book LIKE '%{book_name}%' LIMIT 1;"
         try:
             res = self.conn.execute(cmd)
             zrow = res.fetchone()
-            print(zrow, file=sys.stderr)
             if zrow:
                 return zrow[0]
         except:
@@ -170,15 +176,10 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
 
     @staticmethod
     def GetBookId(book_name):
-        ''' Return the ID for either a Name or a Token '''
-        cmd = "SELECT ID FROM SqlBooks WHERE "
-        if len(book_name) > 4:
-            cmd += f'TOKEN = "{book_name}"'
-        else:
-            cmd += f'Book = "{book_name}"'
-        cmd += " LIMIT 1;"
+        ''' Return the database ID from EITHER a book token, or name. 
+        Return None if not found / error.'''
         dao = SierraDAO.GetDAO(True)
-        # TODO: Get the book ID for the book-name
+        return dao.get_book_id(book_name)
 
     @staticmethod
     def IsValidVerse(cvn):
@@ -187,14 +188,17 @@ WHERE (B.ID=BookID AND BOOK LIKE '%{book_num}%' AND BookChapterID='{chapt}' AND 
         if len(cols) is 3:
             try:
                 chapt = int(cols[1])
+                if chapt < 1:
+                    return False
                 verse = int(cols[2])
-                book  = GetBookId(cols[0])
-                book = SierraDAO.GetBookId(book)
-                # TODO: Convert book name to book ID, return set ina dict.
-                return True
-            except:
-                pass
-        return False        
+                if verse < 1:
+                    return False
+                book = SierraDAO.GetBookId(cols[0])
+                if book:
+                    return True
+            except Exception as ex:
+                print(ex)
+        return False
 
     @staticmethod
     def GetDAO(bSaints=False):
