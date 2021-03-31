@@ -2,6 +2,7 @@ if __name__ == "__main__":
     from verse import Verse
     from sierra_dao import SierraDAO
     assert(SierraDAO.IsValidVerse('Gene:1:1'))
+    assert(SierraDAO.IsValidVerse('gEnE:1:1'))
     assert(SierraDAO.IsValidVerse('Gene:0:1') == False)
     assert(SierraDAO.IsValidVerse('Gene:1:0') == False)
     dao = SierraDAO.GetDAO()
