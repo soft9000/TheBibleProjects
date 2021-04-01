@@ -37,6 +37,8 @@ class Verse:
         return self._mask.format(line.center(self._line_size, char))
     
     def wrap(self, line) -> list():
+        if not line:
+            line = "(none)"
         results = list()
         for w in self._wrap.wrap(line):
             rline = self._mask.format(w)
@@ -58,3 +60,11 @@ class Verse:
         if len(line) > 0:
             results.append(line.center(self._line_size))
         return results
+    
+    def show(self, lines):
+        ''' Display the result of a verse value '''
+        if not lines:
+            print("NONE")
+            return
+        for line in lines:
+            print(line)

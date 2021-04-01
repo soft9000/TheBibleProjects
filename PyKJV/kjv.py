@@ -20,17 +20,19 @@ import argparse
 from verse import Verse
 from sierra_dao import SierraDAO
 
+display = Verse()
+
 
 def say_done():
-    ''' What we see whenever we're done. '''
-    print('(done)')
+    ''' What we see whenever a menu is done. '''
+    print('(exit)')
 
 
-def do_menu(prompt, options, level):
+def do_menu(name, prompt, options, level):
     """ The menu loop - nice for nesting 'till we're done. """
     choice = None
     while choice != options[-1][0]:
-        print(level * 15)
+        print(f'*** {name} ***')
         for o in options:
             print(o[0], o[1])
         choice = input(prompt)
@@ -45,42 +47,47 @@ def do_menu(prompt, options, level):
 
 
 def do_book_cv():
-    ''' Locate book:chapter:verse '''
-    while True:
-        cvn = input("Enter chap:book#:vers# = ").strip()
-        if SierraDAO.IsValidVerse(cvn):
-            pass
-        # TODO: Finish up!
-        break
-    print("Work in progress: Soon!")
+    ''' Show a book:chapter:verse '''
+    cvn = input("Enter chap:book#:vers# = ").strip()
+    zset = SierraDAO.ParseClassicVerse(cvn)
+    if not zset == False:
+        dao = SierraDAO.GetDAO()
+        zverse = dao.get_sierra_num(zset['Book'], zset['Chapter'], zset['Verse'])
+        if zverse:
+            display.show(display.get_verse(zverse))
 
 
 def do_book_vnum():
-    ''' Locate by a 1's based sierra verse number '''
-    pass
+    ''' Show a 1's based sierra verse number '''
+    cvn = input("Verse #: ").strip()
+    if cvn:
+        dao = SierraDAO.GetDAO()
+        zverse = dao.get_sierra(cvn)
+        if zverse:
+            display.show(display.wrap(zverse['text']))
 
 
 def do_lookups():
     ''' The ways to lookup books & verses '''
-    options = [("b", "List Books", do_list),
-               ("c", "book:chapter:verse", do_book_cv),
-               ("a", "absolute verse #", do_book_vnum),
+    options = [("l", "List Books", do_list),
+               ("c", "Classic book:chapter:verse", do_book_cv),
+               ("s", "Sierra #", do_book_vnum),
                ("q", "Quit", say_done)]
-    do_menu("Search Menu: Option = ", options, '?')
+    do_menu("Find Verse", "Option = ", options, '?')
 
 
 def do_list():
-    for line in Verse().list_books():
+    for line in display.list_books():
         print(f' | {line} |')
 
 
 def do_random():
-    lines = Verse().random()
-    for line in lines:
-        print(line)
+    ''' Display a random verse. '''
+    display.show(display.random())
 
 
 def parse_cmd_line():
+    ''' Return True if a commnd-line option was run, else False '''
     HelpInformation = "kjv.py: Search, bookmark & browse the Bible."
     parse = argparse.ArgumentParser(usage='', description=HelpInformation)
     Parser = parse.add_mutually_exclusive_group()
@@ -97,27 +104,20 @@ def parse_cmd_line():
                         action="store_true",
                         help="Search for a specific verse in the bible")
     args = parse.parse_args()
-    option = ""
-
     if args.Random == True:
-        option = "r"
-    elif args.List == True:
-        option = "l"
-    elif args.Search == True:
-        option = "s"
-    return option
-
-
-option = parse_cmd_line()
-if option:
-    if option == "r":
         do_random()
-    elif option == "l":
+        return True
+    if args.List == True:
         do_list()
-    elif option == "s":
+        return True
+    if args.Search == True:
         do_lookups()
-else:
-    options = [("r", "Random Verse", do_random), ("b", "List Books", do_list),
-               ("s", "Search", do_lookups), ("q", "Quit", say_done)]
-    do_menu("Main Menu: Option = ", options, 15)
+        return True
+    return False
+
+
+if not parse_cmd_line():
+    options = [("r", "Random Verse", do_random), ("b", "Book List", do_list),
+               ("l", "Lookup Verse", do_lookups), ("q", "Quit Program", say_done)]
+    do_menu("Main Menu", "Option = ", options, '#')
 print(".")

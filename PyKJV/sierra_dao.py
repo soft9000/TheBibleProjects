@@ -51,7 +51,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         ''' Lookup a single sierra verse number. '''
         rows = self.search(f" V.ID={sierra_num} ")
         if rows:
-            for row in rows:
+            for row in list(rows):
                 return row
         return self.source()
 
@@ -129,11 +129,11 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         return None
 
     def get_sierra_num(self, book_num, chapt, verse):
-        book_num = self.get_book_id(book_num)
-        if not book_num:
-            return None
+        ''' Convert a BOOK_ID, chapter, and verse number
+        into a 1's based "Sierra" verse number. 
+        Return None if none found.  '''
         cmd = f"SELECT ID FROM SqlTblVerse WHERE (BookID = {book_num} AND \
-        BookChapterID='{chapt}' AND BookVerseID='{verse}') LIMIT 1;"
+        BookChapterID={chapt} AND BookVerseID={verse}) LIMIT 1;"
         try:
             res = self.conn.execute(cmd)
             if not res:
@@ -164,6 +164,8 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         Return None if not found / error.'''
         if len(book_name) < 5:
             book_name = self.get_book_title(book_name)
+            if not book_name:
+                return None
         cmd = f"SELECT ID FROM SqlBooks WHERE Book LIKE '%{book_name}%' LIMIT 1;"
         try:
             res = self.conn.execute(cmd)
@@ -182,8 +184,9 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         return dao.get_book_id(book_name)
 
     @staticmethod
-    def IsValidVerse(cvn):
-        ''' Its the reference valid? (string plus two integers) '''
+    def ParseClassicVerse(cvn):
+        ''' Its the CLASSIC reference valid? (string plus two numbers.) 
+        Return ductionary if found, else False.'''
         cols = cvn.split(':')
         if len(cols) is 3:
             try:
@@ -195,7 +198,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
                     return False
                 book = SierraDAO.GetBookId(cols[0])
                 if book:
-                    return True
+                    return {"Book":book, "Chapter":chapt, "Verse":verse}
             except Exception as ex:
                 print(ex)
         return False
