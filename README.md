@@ -45,9 +45,9 @@ Bible: Either / Both of above
 STATUS:
 - DOBE: Random Verse
 - DOBE: List Books
-- SOON: CLI (argparse) by Mr. Bear
-- NEXT: Verse Lookup (Sierra)
-- NEXT: Verse Lookup (Classic)
+- DOBE: CLI (argparse) by Mr. Bear
+- DOBE: Verse Lookup (Sierra)
+- DOBE: Verse Lookup (Classic)
 - NEXT: Bookmarking (unary)
 - NEXT: Book Reading
 - NEXT: Verse Bookmarks (multiple)
