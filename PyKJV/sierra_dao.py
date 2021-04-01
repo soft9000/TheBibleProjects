@@ -127,6 +127,13 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             print(ex, file=sys.stderr)
             raise ex
         return None
+    
+    def get_sierra_book(self, book_name, chapt, verse):
+        ''' Convert a BOOK NAME, chapter, and verse number
+        into a 1's based "Sierra" verse number. 
+        Return None if none found.  '''
+        bid = self.get_book_id(book_name)
+        return self.get_sierra_num(bid, 1, 1)
 
     def get_sierra_num(self, book_num, chapt, verse):
         ''' Convert a BOOK_ID, chapter, and verse number

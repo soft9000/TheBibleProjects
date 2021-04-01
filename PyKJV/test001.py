@@ -8,7 +8,7 @@ if __name__ == "__main__":
     dao = SierraDAO.GetDAO()
     books = list(dao.list_books())
     assert('Genesis' in books)
-    assert(dao.get_sierra_num('gEnE', 1, 1) == 1)
+    assert(dao.get_sierra_book('gEnE', 1, 1) == 1)
     v = Verse()
     test = dao.search("verse LIKE '%PERFECT%'")
     assert (len(list(test)) == 124)
