@@ -49,6 +49,8 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
 
     def get_sierra(self, sierra_num) -> dict():
         ''' Lookup a single sierra verse number. '''
+        if not isinstance(sierra_num, int):
+            return self.source()
         rows = self.search(f" V.ID={sierra_num} ")
         if rows:
             for row in list(rows):
@@ -64,11 +66,11 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             zrow = res.fetchone()
             while zrow:
                 result = dict()
-                result['ID'] = zrow[0]
-                result['Book'] = zrow[1]
-                result['BookMeta'] = zrow[2]
-                result['Title'] = result['Book'].split('.')[2]
-                result['Token'] = zrow[3]
+                result['id'] = zrow[0]
+                result['book'] = zrow[1]
+                result['meta'] = zrow[2]
+                result['title'] = result['book'].split('.')[2]
+                result['token'] = zrow[3]
                 yield result
                 zrow = res.fetchone()
         except Exception as ex:
@@ -160,10 +162,10 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             return None
         zup = book_name.strip().upper()
         for book in dao.list_book_table():
-            if zup == book['Title'].strip().upper():
-                return book['Title']
-            if zup == book['Token'].strip().upper():
-                return book['Title']
+            if zup == book['title'].strip().upper():
+                return book['title']
+            if zup == book['token'].strip().upper():
+                return book['title']
         return None
 
     def get_book_id(self, book_name):
@@ -205,7 +207,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
                     return False
                 book = SierraDAO.GetBookId(cols[0])
                 if book:
-                    return {"Book":book, "Chapter":chapt, "Verse":verse}
+                    return {"book":book, "chapter":chapt, "verse":verse}
             except Exception as ex:
                 print(ex)
         return False

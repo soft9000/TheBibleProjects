@@ -52,7 +52,7 @@ def do_book_cv():
     zset = SierraDAO.ParseClassicVerse(cvn)
     if not zset == False:
         dao = SierraDAO.GetDAO()
-        zverse = dao.get_sierra_num(zset['Book'], zset['Chapter'], zset['Verse'])
+        zverse = dao.get_sierra_num(zset['book'], zset['chapter'], zset['verse'])
         if zverse:
             display.show(display.get_verse(zverse))
 
@@ -68,7 +68,7 @@ def do_book_vnum():
 
 
 def do_lookups():
-    ''' The ways to lookup books & verses '''
+    ''' Ways to lookup books & verses '''
     options = [("l", "List Books", do_list),
                ("c", "Classic book:chapter:verse", do_book_cv),
                ("s", "Sierra #", do_book_vnum),
@@ -85,6 +85,20 @@ def do_random():
     ''' Display a random verse. '''
     display.show(display.random())
 
+def do_find(s_num):
+    ''' Find a verse using the unique verse / Sierra number '''
+    display.show(display.get_verse(s_num))
+
+def do_find_cvn(cvn):
+    ''' Find a verse using the classic chapter:book:verse notation '''
+    ref = SierraDAO.ParseClassicVerse(cvn)
+    if not ref:
+        print(f"(Verse '{cvn}' not found.)")
+        return
+    dao = SierraDAO.GetDAO()
+    s_num = dao.get_sierra_num(ref['Book'], ref['Chapter'], ref['Verse'])
+    display.show(display.get_verse(s_num))
+
 
 def parse_cmd_line():
     ''' Return True if a commnd-line option was run, else False '''
@@ -94,15 +108,19 @@ def parse_cmd_line():
     Parser.add_argument("-r",
                         "--Random",
                         action="store_true",
-                        help="Search for a random verse in the bible")
+                        help="Get a random Bible verse")
     Parser.add_argument("-l",
                         "--List",
                         action="store_true",
-                        help="List the books included in this software")
+                        help="List Bible books")
     Parser.add_argument("-s",
-                        "--Search",
+                        "--Sierra",
                         action="store_true",
-                        help="Search for a specific verse in the bible")
+                        help="Find verse by #")
+    Parser.add_argument("-v",
+                        "--Verse",
+                        action="store_true",
+                        help="Find verse by chapter:book:verse")
     args = parse.parse_args()
     if args.Random == True:
         do_random()
@@ -110,14 +128,17 @@ def parse_cmd_line():
     if args.List == True:
         do_list()
         return True
-    if args.Search == True:
-        do_lookups()
+    if args.Sierra == True:
+        do_find(123) # TODO: Need to accept a number, then call something else wth it.
+        return True
+    if args.Verse == True:
+        do_find_cvn("gene:1:3") # TODO: Need to accept a CVN, then call something else wth it.
         return True
     return False
 
 
 if not parse_cmd_line():
     options = [("r", "Random Verse", do_random), ("b", "Book List", do_list),
-               ("l", "Lookup Verse", do_lookups), ("q", "Quit Program", say_done)]
+               ("s", "Show Verse", do_lookups), ("q", "Quit Program", say_done)]
     do_menu("Main Menu", "Option = ", options, '#')
 print(".")
