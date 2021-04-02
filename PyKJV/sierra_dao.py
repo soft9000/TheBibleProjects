@@ -49,11 +49,9 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             verse = random.randrange(1, 31103)
         return verse
 
-    def get_sierra(self, sierra_num) -> dict():
+    def get_sierra(self, vnum) -> dict():
         """ Lookup a single sierra verse number. """
-        if not isinstance(sierra_num, int):
-            return self.source()
-        rows = self.search(f" V.ID={sierra_num} ")
+        rows = self.search(f" V.ID={vnum} ")
         if rows:
             for row in list(rows):
                 return row
