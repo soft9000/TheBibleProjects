@@ -111,17 +111,19 @@ def parse_cmd_line():
     """ Return True if a commnd-line option was run, else False """
     HelpInformation = "kjv.py: Search, bookmark & browse the Bible."
     parse = argparse.ArgumentParser(usage="", description=HelpInformation)
+    
+    parse.add_argument(
+        "-s", "--Sierra",type = int,metavar="", help="Find verse by #")
+    parse.add_argument(
+        "-v", "--Verse",metavar="", help="Find verse by chapter:book:verse"
+    )
     Parser = parse.add_mutually_exclusive_group()
     Parser.add_argument(
         "-r", "--Random", action="store_true", help="Get a random Bible verse"
     )
     Parser.add_argument("-l", "--List", action="store_true",
                         help="List Bible books")
-    Parser.add_argument(
-        "-s", "--Sierra", action="store_true", help="Find verse by #")
-    Parser.add_argument(
-        "-v", "--Verse", action="store_true", help="Find verse by chapter:book:verse"
-    )
+
     args = parse.parse_args()
     if args.Random == True:
         do_random()
@@ -129,14 +131,14 @@ def parse_cmd_line():
     if args.List == True:
         do_list()
         return True
-    if args.Sierra == True:
-        # TODO: Need to accept a number, then call something else wth it.
-        do_find(123)
+    if args.Sierra != None:
+        # TODO: Need to accept a number, then call something else wth it. "Done"
+        do_find(args.Sierra)
         return True
-    if args.Verse == True:
+    if len(args.Verse) >= 0:
         do_find_cvn(
-            "gene:1:3"
-        )  # TODO: Need to accept a CVN, then call something else wth it.
+            args.Verse
+        )  # TODO: Need to accept a CVN, then call something else wth it. "Done"
         return True
     return False
 
