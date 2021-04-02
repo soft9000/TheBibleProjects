@@ -6,11 +6,11 @@ is available.
 
 To use the menu:
 
-python3 kjv.py
+`python3 kjv.py`
 
 To use a quick lookup:
 
-python3 kjv.py --help
+`python3 kjv.py --help`
 
 p.s. 
 
