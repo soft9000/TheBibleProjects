@@ -3,7 +3,7 @@
 File: kjv.py
 Problem Domain: Console Application
 Status: WORK IN PROGRESS
-Revision: -1
+Revision: 0.01
 
 MISSION
 =======
