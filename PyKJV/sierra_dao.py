@@ -215,7 +215,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
     @staticmethod
     def GetDAO(bSaints=False):
         """ Connect to the database & return the DAO """
-        db = "biblia.sqlt3"
+        db = "biblia02.sqlt3"
         if os.path.exists("./" + db):
             db = "./" + db
         else:

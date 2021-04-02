@@ -23,7 +23,7 @@ class Verse:
         verse = dao.get_sierra(verse)
         view = Verse()
         if not verse:
-            return view.wrap("(none)")
+            return view.wrap(None)
         return view.wrap(verse["text"].strip())
 
     def random(self, bSaints=False) -> list():
@@ -33,7 +33,7 @@ class Verse:
 
     def center(self, line, char=" "):
         if len(line) > self._line_size:
-            line = line[0 : self._line_size]
+            line = line[0: self._line_size]
         return self._mask.format(line.center(self._line_size, char))
 
     def wrap(self, line) -> list():
@@ -65,7 +65,7 @@ class Verse:
     def show(self, lines):
         """ Display the result of a verse value """
         if not lines:
-            print("NONE")
+            print(self.wrap(None))
             return
         for line in lines:
             print(line)

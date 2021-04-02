@@ -50,9 +50,12 @@ def do_book_cv():
     """ Show a book:chapter:verse """
     cvn = input("Enter chap:book#:vers# = ").strip()
     zset = SierraDAO.ParseClassicVerse(cvn)
-    if not zset == False:
+    if zset == False:
+        display.show(None)
+    else:
         dao = SierraDAO.GetDAO()
-        zverse = dao.get_sierra_num(zset["book"], zset["chapter"], zset["verse"])
+        zverse = dao.get_sierra_num(
+            zset["book"], zset["chapter"], zset["verse"])
         if zverse:
             display.show(display.get_verse(zverse))
 
@@ -112,8 +115,10 @@ def parse_cmd_line():
     Parser.add_argument(
         "-r", "--Random", action="store_true", help="Get a random Bible verse"
     )
-    Parser.add_argument("-l", "--List", action="store_true", help="List Bible books")
-    Parser.add_argument("-s", "--Sierra", action="store_true", help="Find verse by #")
+    Parser.add_argument("-l", "--List", action="store_true",
+                        help="List Bible books")
+    Parser.add_argument(
+        "-s", "--Sierra", action="store_true", help="Find verse by #")
     Parser.add_argument(
         "-v", "--Verse", action="store_true", help="Find verse by chapter:book:verse"
     )
@@ -125,7 +130,8 @@ def parse_cmd_line():
         do_list()
         return True
     if args.Sierra == True:
-        do_find(123)  # TODO: Need to accept a number, then call something else wth it.
+        # TODO: Need to accept a number, then call something else wth it.
+        do_find(123)
         return True
     if args.Verse == True:
         do_find_cvn(
