@@ -15,7 +15,8 @@ python3 kjv.py --help
 p.s. 
 
 You will want to use `python` rather that `python3` on
-som operating systems.
+some operating systems.
 
-Written in 100% pure Python, please use Python 3.6, 
-or greater.
+Written in 100% pure Python.
+
+Please use Python 3.6, or greater.
