@@ -2,6 +2,8 @@ if __name__ == "__main__":
     from verse import Verse
     from sierra_dao import SierraDAO
 
+    assert SierraDAO.ParseClassicVerse("Genesis:1:1")
+    assert SierraDAO.ParseClassicVerse("gEnesis:1:1")
     assert SierraDAO.ParseClassicVerse("Gene:1:1")
     assert SierraDAO.ParseClassicVerse("gEnE:1:1")
     assert SierraDAO.ParseClassicVerse("Gene:0:1") == False
@@ -18,3 +20,4 @@ if __name__ == "__main__":
     zdict = dao.list_book_table()
     zbooks = list(zdict)
     assert len(zbooks) == 81
+    print("Testing Success!")
