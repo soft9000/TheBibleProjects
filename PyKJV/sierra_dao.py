@@ -192,8 +192,8 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
 
     @staticmethod
     def ParseClassicVerse(cvn):
-        """Its the CLASSIC reference valid? (string plus two numbers.)
-        Return ductionary if found, else False."""
+        """Is the CLASSIC reference valid? (string plus two numbers.)
+        Return dictionary if found, else False."""
         cols = cvn.split(":")
         if len(cols) is 3:
             try:
@@ -209,10 +209,10 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             except Exception as ex:
                 print(ex)
         return False
-
+    
     @staticmethod
-    def GetDAO(bSaints=False):
-        """ Connect to the database & return the DAO """
+    def Connect(bSaints=False):
+        """ Connect to the database & return same """
         db = "biblia02.sqlt3"
         if os.path.exists("./" + db):
             db = "./" + db
@@ -223,6 +223,11 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             quit()
         conn = sqlite3.connect(db)
         # conn.row_factory = dict_factory
+        return conn
+
+    @staticmethod
+    def GetDAO(bSaints=False):
+        conn = SierraDAO.Connect(bSaints)
         curs = conn.cursor()
         dao = SierraDAO(curs, bSaints)
         return dao

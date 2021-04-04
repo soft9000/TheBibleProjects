@@ -132,13 +132,12 @@ def parse_cmd_line():
         do_list()
         return True
     if args.Sierra != None:
-        # TODO: Need to accept a number, then call something else wth it. "Done"
         do_find(args.Sierra)
         return True
     if len(args.Verse) >= 0:
         do_find_cvn(
             args.Verse
-        )  # TODO: Need to accept a CVN, then call something else wth it. "Done"
+        )
         return True
     return False
 

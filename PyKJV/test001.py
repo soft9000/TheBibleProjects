@@ -1,6 +1,7 @@
 if __name__ == "__main__":
     from verse import Verse
     from sierra_dao import SierraDAO
+    import mark_dao
 
     assert SierraDAO.ParseClassicVerse("Genesis:1:1")
     assert SierraDAO.ParseClassicVerse("gEnesis:1:1")
@@ -21,3 +22,5 @@ if __name__ == "__main__":
     zbooks = list(zdict)
     assert len(zbooks) == 81
     print("Testing Success!")
+    bmk = mark_dao.BookMark(15,51)
+    mark_dao.BookMarks.Sync(bmk)
