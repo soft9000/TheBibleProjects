@@ -127,23 +127,26 @@ def parse_cmd_line():
                         help="List Bible books")
 
     args = parse.parse_args()
-    if args.Random == True:
-        do_random()
-        return True
-    if args.List == True:
-        do_list()
-        return True
-    if args.Sierra != None:
-        
-        do_find(args.Sierra)
-        return True
-    if len(args.Verse) >= 0:
-        
-        do_find_cvn(
-            args.Verse
-        )
-        return True
-    return False
+    try:
+        if args.Random == True:
+            do_random()
+            return True
+        if args.List == True:
+            do_list()
+            return True
+        if args.Sierra != None:
+            
+            do_find(args.Sierra)
+            return True
+        if len(args.Verse) >= 0:
+            
+            do_find_cvn(
+                args.Verse
+            )
+            return True
+        return False
+    except:
+        return False
 
 
 if not parse_cmd_line():
