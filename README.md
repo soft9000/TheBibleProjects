@@ -35,7 +35,7 @@ Technologies: Python, SQLite, HTML, CSS3, Javascript & AJAX
 
 Bible: Either / Both of above
 
-# PyKJV (WORK IN PROGRESS!)
+# PyKJV
 Application: Console Application (Universal UI!)
 
 Technologies: Python, SQLite, Classic / Console TUI
@@ -43,15 +43,14 @@ Technologies: Python, SQLite, Classic / Console TUI
 Bible: Either / Both of above
 
 STATUS:
-- DOBE: Random Verse
-- DOBE: List Books
-- DOBE: CLI (argparse) by Mr. Bear
-- DOBE: Verse Lookup (Sierra)
-- DOBE: Verse Lookup (Classic)
+- DONE: Random Verse
+- DONE: List Books
+- DONE: CLI (argparse) by Mr. Bear
+- DONE: Verse Lookup (Sierra)
+- DONE: Verse Lookup (Classic)
+
+We have the first OFFICIAL CLI Release - Happy Easter!
 - NEXT: Bookmarking (unary)
 - NEXT: Book Reading
 - NEXT: Verse Bookmarks (multiple)
 - More soon! \o/
-
-
-

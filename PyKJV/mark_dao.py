@@ -17,7 +17,7 @@ class BookMark:
 class BookMarks:
     ''' Controller / API '''
     @staticmethod
-    def GetBookmarks(user=None) -> list():
+    def Read(user=None) -> list():
         ''' Get all of the BookMarks() for the default / user '''
         if not user:
             user = 0
@@ -50,4 +50,24 @@ class BookMarks:
             res = conn.execute(cmd)
         if res:
             conn.commit()
+        return False
+    
+    @staticmethod
+    def Delete(items, user=None) -> bool:
+        ''' Delete a BookMark() or a list() of same.
+        Returns FALSE on error. '''
+        if isinstance(items, BookMark):
+            hole = items
+            items = [hole]
+        try:
+            conn = SierraDAO.Connect()
+            for item in items:
+                if not isinstance(items, BookMark):
+                    return False
+                cmd = f"DELETE FROM UserSelects WHERE ID={item.m_id};"
+                res = conn.execute(cmd)
+            conn.commit()
+            return True
+        except:
+            pass
         return False
