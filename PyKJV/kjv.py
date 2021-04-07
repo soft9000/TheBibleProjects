@@ -62,12 +62,16 @@ def do_book_cv():
 
 def do_book_vnum():
     """ Show a 1's based sierra verse number """
-    cvn = input("Verse #: ").strip()
-    if cvn:
-        dao = SierraDAO.GetDAO()
-        zverse = dao.get_sierra(cvn)
+    try:
+        cvn = input("Verse #: ").strip()
+        if cvn:
+            dao = SierraDAO.GetDAO()
+            zverse = dao.get_sierra(cvn)
         if zverse:
             display.show(display.wrap(zverse["text"]))
+    except:""" If invalid input, try again """
+    do_book_vnum
+
 
 
 def do_lookups():
@@ -125,21 +129,23 @@ def parse_cmd_line():
                         help="List Bible books")
 
     args = parse.parse_args()
-    if args.Random == True:
-        do_random()
-        return True
-    if args.List == True:
-        do_list()
-        return True
-    if args.Sierra != None:
-        do_find(args.Sierra)
-        return True
-    if len(args.Verse) >= 0:
-        do_find_cvn(
-            args.Verse
-        )
-        return True
-    return False
+    try:
+        if args.Random == True:
+            do_random()
+            return True
+        if args.List == True:
+            do_list()
+            return True
+        if args.Sierra != None:
+            do_find(args.Sierra)
+            return True
+        if len(args.Verse) >= 0:
+            do_find_cvn(
+                args.Verse
+            )
+            return True
+    except: 
+        return False
 
 
 if not parse_cmd_line():
