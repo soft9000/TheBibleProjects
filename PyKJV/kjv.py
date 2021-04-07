@@ -98,12 +98,13 @@ def do_find(s_num):
 
 def do_find_cvn(cvn):
     """ Find a verse using the classic chapter:book:verse notation """
-    ref = SierraDAO.ParseClassicVerse(cvn)
-    if not ref:
-        print(f"(Verse '{cvn}' not found.)")
-        return
+    #ref = SierraDAO.ParseClassicVerse(cvn)
+    for ref in cvn:
+        if not ref:
+            print(f"(Verse '{cvn}' not found.)")
+            return
     dao = SierraDAO.GetDAO()
-    s_num = dao.get_sierra_num(ref["book"], ref["chapter"], ref["verse"])
+    s_num = dao.get_sierra_num(SierraDAO.GetBookId(cvn[0]), int(cvn[1]), int(cvn[2]))
     display.show(display.get_verse(s_num))
 
 
@@ -114,8 +115,9 @@ def parse_cmd_line():
     
     parse.add_argument(
         "-s", "--Sierra",type = int,metavar="", help="Find verse by #")
+        # I am changing this so that it can take a line of text P.S. it will turn input into a list
     parse.add_argument(
-        "-v", "--Verse",metavar="", help="Find verse by chapter:book:verse"
+        "-v", "--Verse",metavar="",nargs="*", help="Find verse by chapter:book:verse"
     )
     Parser = parse.add_mutually_exclusive_group()
     Parser.add_argument(
@@ -132,9 +134,11 @@ def parse_cmd_line():
         do_list()
         return True
     if args.Sierra != None:
+        
         do_find(args.Sierra)
         return True
     if len(args.Verse) >= 0:
+        
         do_find_cvn(
             args.Verse
         )
