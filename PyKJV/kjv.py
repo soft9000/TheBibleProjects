@@ -124,7 +124,7 @@ def Turn_Page(Statement):
     options = [
         ("N", "Next Verse"),
         ("P", "Previous Verse"),
-        ("Q", "Quit Program"),
+        ("Q", "Quit Classic Verse"),
     ]
     option = None
     
@@ -174,19 +174,38 @@ def Turn_Page(Statement):
             
         #page down
         elif option.upper() == "P":
-            
+
             Statement[2] = int(Statement[2]) - 10
-            verse = Page(Statement)
-            verse = verse.PageDown()
-            # if you`ve come to the end of the chapter then go to the previous chapter
-            #this is not going to work... need to add a statment that says "if you have negative verses then go to the top of the previous chapter"
+            zpage = Page(Statement)
+            verse = zpage.PageDown()
+            
+            #if you`ve you didnt receive a verse....
             if len(verse) == 0:
-                Statement[1] = int(Statement[1]) - 1
-                Statement[2] = 0
-                verse = Page(Statement)
-                verse = verse.PageUp()
-            for n in verse:
-                display.show(n)
+                
+                # construct a count statement to retrieve the total number of verses
+                Total_Pages = zpage.Count_Chapter_Verses(Statement[0],Statement[1])
+                Total_Chapters = zpage.Count_Books_Chapters(Statement[0])
+                
+                
+                # if your trying to get a chapter that is not within the book. then switch to the next book
+                if int(Statement[1]) >= Total_Chapters:
+
+                    BookTitle = SierraDAO.GetBookId(Statement[0]) - 1
+                    BookTitle = zpage.retrieve_title(BookTitle)
+
+                    Statement[0] = BookTitle
+                    Statement[1] = 1
+                    Statement[2] = 0
+
+                    verse = Page(Statement)
+                    verse = verse.down()
+                #if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
+                elif Statement[2] >= Total_Pages:
+
+                    Statement[1] = int(Statement[1]) - 1
+                    Statement[2] = 0
+                    verse = Page(Statement)
+                    verse = verse.PageUp()
             
         elif option.upper() == "Q":
             break
