@@ -196,39 +196,26 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         Return dictionary if found, else False."""
         cols = cvn.split(":")
         if type(cols) == type(list):
-
-            if len(cols) is 3:
-                try:
-                    chapt = int(cols[1])
-                    if chapt < 1:
-                        return False
-                    verse = int(cols[2])
-                    if verse < 1:
-                        return False
-                    book = SierraDAO.GetBookId(cols[0])
-                    if book:
-                        return {"book": book, "chapter": chapt, "verse": verse}
-                except Exception as ex:
-                    print(ex)
-
-            return False
+            pass
         else:
             cols = cvn.split()
-            if len(cols) is 3:
-                try:
-                    chapt = int(cols[1])
-                    if chapt < 1:
-                        return False
-                    verse = int(cols[2])
-                    if verse < 1:
-                        return False
-                    book = SierraDAO.GetBookId(cols[0])
-                    if book:
-                        return {"book": book, "chapter": chapt, "verse": verse}
-                except Exception as ex:
-                    print(ex)
 
-            return False
+        if len(cols) is 3:
+            try:
+                chapt = int(cols[1])
+                if chapt < 1:
+                    return False
+                verse = int(cols[2])
+                if verse < 1:
+                    return False
+                book = SierraDAO.GetBookId(cols[0])
+                if book:
+                    return {"book": book, "chapter": chapt, "verse": verse}
+            except Exception as ex:
+                print(ex)
+
+        return False
+        
     
     @staticmethod
     def Connect(bSaints=False):
