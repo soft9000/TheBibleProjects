@@ -5,9 +5,9 @@ from verse import Verse
 
 class Page:
 
-    # cursor is the result of an sql self.statement
+    # cursor is the result of an sql statement
     def __init__(self, statement):
-        self.self.statement = self.statement
+        self.statement = statement
         self.cmd = "SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID}) LIMIT 10;"
 
     def retrieve_title(self, ID):
@@ -45,35 +45,35 @@ class Page:
         return Total_Pages
 
     def page_up(self):
-        if len(self.self.statement) == 3:
-            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
+        if len(self.statement) == 3:
+            Z_ID = SierraDAO.GetBookId(self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND \
-            BookChapterID={self.self.statement[1]} AND BookVerseID>={self.self.statement[2]}) LIMIT 10;"
+            BookChapterID={self.statement[1]} AND BookVerseID>={self.statement[2]}) LIMIT 10;"
             N_page = dao.conn.execute(cmd)
 
-        elif len(self.self.statement) == 1:
-            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
+        elif len(self.statement) == 1:
+            Z_ID = SierraDAO.GetBookId(self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse, Book, BookChapterID, BookVerseID, V.ID, BookID \
-            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.self.statement[0]}) ORDER BY V.ID;"
+            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.statement[0]}) ORDER BY V.ID;"
             N_page = dao.conn.execute(cmd)
         verse = N_page.fetchall()
         return verse
 
     def page_down(self):
-        if len(self.self.statement) == 3:
-            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
+        if len(self.statement) == 3:
+            Z_ID = SierraDAO.GetBookId(self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND \
-            BookChapterID={self.self.statement[1]} AND BookVerseID<={self.self.statement[2]}) LIMIT 10;"
+            BookChapterID={self.statement[1]} AND BookVerseID<={self.statement[2]}) LIMIT 10;"
             N_page = dao.conn.execute(cmd)
 
-        elif len(self.self.statement) == 1:
-            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
+        elif len(self.statement) == 1:
+            Z_ID = SierraDAO.GetBookId(self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse, Book, BookChapterID, BookVerseID, V.ID, BookID \
-            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.self.statement[0]}) ORDER BY V.ID;"
+            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.statement[0]}) ORDER BY V.ID;"
             N_page = dao.conn.execute(cmd)
         verse = N_page.fetchall()
         return verse
@@ -92,8 +92,8 @@ class PageOps():
         self.statement = statement
 
     def do_next_page(self):
-        self.self.statement[2] = int(self.self.statement[2]) + 10 # TODO: this is broken - please fix
-        zpage = Page(self.self.statement)
+        self.statement[2] = int(self.statement[2]) + 10 # TODO: this is broken - please fix
+        zpage = Page(self.statement)
         verse = zpage.page_up()
 
         # if you did not receive a verse....
@@ -130,7 +130,7 @@ class PageOps():
             display.show(zformat)
 
     def do_last_page(self):
-        self.statement[2] = int(self.self.statement[2]) + 10 # TODO: this is broken - please fix
+        self.statement[2] = int(self.statement[2]) + 10 # TODO: this is broken - please fix
         zpage = Page(self.statement)
         verse = zpage.page_down()
 
