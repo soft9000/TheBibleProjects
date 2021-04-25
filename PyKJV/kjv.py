@@ -87,7 +87,7 @@ def do_read_from():
                     display.show(display.wrap(format_num_with_text(zverse[0],zverse[1])))
 
             print("~~~~~~~~~~")
-            cntn = input("Page (u)p, (d)own, (m)ark, or (q)uit: ")
+            cntn = input("Page (u)p, (d)own, (m)ark, (r)eview marks, or (q)uit: ")
             if cntn == "u":
                 cvn = int(cvn) + 10
             if cntn == "d":
@@ -100,6 +100,9 @@ def do_read_from():
                 together = mark_dao.BookMark(markerone,markertwo)
                 mark_dao.BookMarks.Sync(together)
                 print("Marked")
+            if cntn == "r":
+                do_read_bkmrk()
+                break
             print("~~~~~~~~~~")
 
 def format_num_with_text(num, txt):
@@ -113,7 +116,7 @@ def do_read_bkmrk():
         oblist = mark_dao.BookMarks.Read()
         for x in oblist:
             print(x.__dict__)
-        cmd = input("(d)elete, (u)pdate or (q)uit: ")
+        cmd = input("(d)elete, (u)pdate, (r)ead from or (q)uit: ")
         if cmd == "d":
             rem = int(input("Delete ID: "))
             todelete = mark_dao.BookMark(0,0,rem)
@@ -126,6 +129,9 @@ def do_read_bkmrk():
             mark_dao.BookMarks.Sync(concatinate)
         if cmd == "q":
             loop = False
+        if cmd == "r":
+            do_read_from()
+            break
 
 
 def do_lookups():
