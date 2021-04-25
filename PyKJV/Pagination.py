@@ -2,6 +2,7 @@ import sqlite3
 from sierra_dao import SierraDAO
 from verse import Verse
 
+display = Verse()
 
 class Page:
 
@@ -26,19 +27,19 @@ class Page:
             for line in line1:
                 return int(line)
 
-    def count_chapter_verses(self, book_ID, Chapter_ID):
-        book_ID = SierraDAO.GetBookId(book_ID)
+    def count_chapter_verses(self, Book_Title, Chapter_ID):
+        Book_Title = SierraDAO.GetBookId(Book_Title)
         cmd = "select COUNT(BookVerseID) from SqlTblVerse where (BookID = {Z_ID} AND BookChapterID={BookID});"
-        cmd = cmd.format(Z_ID=book_ID, BookID=Chapter_ID)
+        cmd = cmd.format(Z_ID=Book_Title, BookID=Chapter_ID)
         DAO = SierraDAO.GetDAO()
         Count_Pages = DAO.conn.execute(cmd)
         Total_Pages = self.convert_sql_int(Count_Pages)
         return Total_Pages
 
-    def count_books_chapters(self, book_ID):
-        book_ID = SierraDAO.GetBookId(book_ID)
+    def count_books_chapters(self, Book_Title):
+        Book_Title = SierraDAO.GetBookId(Book_Title)
         cmd = "select MAX(BookChapterID) from SqlTblVerse where BookID = {Z_ID};"
-        cmd = cmd.format(Z_ID=book_ID)
+        cmd = cmd.format(Z_ID=Book_Title)
         DAO = SierraDAO.GetDAO()
         Count_Pages = DAO.conn.execute(cmd)
         Total_Pages = self.convert_sql_int(Count_Pages)
@@ -130,7 +131,7 @@ class PageOps():
             display.show(zformat)
 
     def do_last_page(self):
-        self.statement[2] = int(self.statement[2]) + 10 # TODO: this is broken - please fix
+        self.statement[2] = int(self.statement[2]) - 10 # TODO: this is broken - please fix
         zpage = Page(self.statement)
         verse = zpage.page_down()
 
@@ -143,22 +144,37 @@ class PageOps():
 
             # if your trying to get a chapter that is not within the book, then 
             # switch to the next book
-            if int(self.statement[1]) >= Total_Chapters:
+            if int(self.statement[1]) <= 1: # if we have < 1 chapters? and if we have <1 verses for other check?
+                
                 BookTitle = SierraDAO.GetBookId(self.statement[0]) - 1
                 BookTitle = zpage.retrieve_title(BookTitle)
+                
+                Top_chapter = zpage.count_books_chapters(BookTitle)
+
+                ChapterMaxVerse = zpage.count_chapter_verses(BookTitle,Top_chapter)
 
                 self.statement[0] = BookTitle
-                self.statement[1] = 1
-                self.statement[2] = 0
+                self.statement[1] = Top_chapter
+                self.statement[2] = ChapterMaxVerse
 
                 verse = Page(self.statement)
-                verse = verse.down()
+                verse = verse.page_down()
             # if the verse we are currently at is equal to or greater than the 
             # page count "number of verses in our book" then turn the chapter
-            elif self.statement[2] >= Total_Pages:
+            elif self.statement[2] <= 1:
+
                 self.statement[1] = int(self.statement[1]) - 1
-                self.statement[2] = 0
+
+                ChapterMaxVerse = zpage.count_chapter_verses(self.statement[0],self.statement[1])
+                
+                self.statement[2] = ChapterMaxVerse
+
+                
+
                 verse = Page(self.statement)
                 verse = verse.page_up()
+        for n in verse:
+            zformat = display.wrap(n[0])
+            display.show(zformat)
 
 
