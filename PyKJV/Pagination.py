@@ -5,9 +5,9 @@ from verse import Verse
 
 class Page:
 
-    # cursor is the result of an sql statement
-    def __init__(self, Statement):
-        self.Statement = Statement
+    # cursor is the result of an sql self.statement
+    def __init__(self, statement):
+        self.self.statement = self.statement
         self.cmd = "SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID}) LIMIT 10;"
 
     def retrieve_title(self, ID):
@@ -45,35 +45,35 @@ class Page:
         return Total_Pages
 
     def page_up(self):
-        if len(self.Statement) == 3:
-            Z_ID = SierraDAO.GetBookId(self.Statement[0])
+        if len(self.self.statement) == 3:
+            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND \
-            BookChapterID={self.Statement[1]} AND BookVerseID>={self.Statement[2]}) LIMIT 10;"
+            BookChapterID={self.self.statement[1]} AND BookVerseID>={self.self.statement[2]}) LIMIT 10;"
             N_page = dao.conn.execute(cmd)
 
-        elif len(self.Statement) == 1:
-            Z_ID = SierraDAO.GetBookId(self.Statement[0])
+        elif len(self.self.statement) == 1:
+            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse, Book, BookChapterID, BookVerseID, V.ID, BookID \
-            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.Statement[0]}) ORDER BY V.ID;"
+            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.self.statement[0]}) ORDER BY V.ID;"
             N_page = dao.conn.execute(cmd)
         verse = N_page.fetchall()
         return verse
 
     def page_down(self):
-        if len(self.Statement) == 3:
-            Z_ID = SierraDAO.GetBookId(self.Statement[0])
+        if len(self.self.statement) == 3:
+            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND \
-            BookChapterID={self.Statement[1]} AND BookVerseID<={self.Statement[2]}) LIMIT 10;"
+            BookChapterID={self.self.statement[1]} AND BookVerseID<={self.self.statement[2]}) LIMIT 10;"
             N_page = dao.conn.execute(cmd)
 
-        elif len(self.Statement) == 1:
-            Z_ID = SierraDAO.GetBookId(self.Statement[0])
+        elif len(self.self.statement) == 1:
+            Z_ID = SierraDAO.GetBookId(self.self.statement[0])
             dao = SierraDAO.GetDAO()
             cmd = f"SELECT Verse, Book, BookChapterID, BookVerseID, V.ID, BookID \
-            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.Statement[0]}) ORDER BY V.ID;"
+            FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {self.self.statement[0]}) ORDER BY V.ID;"
             N_page = dao.conn.execute(cmd)
         verse = N_page.fetchall()
         return verse
@@ -83,3 +83,82 @@ class Page:
 
     def end_of_path(self):
         pass
+
+
+class PageOps():
+    ''' Here is a way to use the main parser '''
+
+    def __init__(self, statement):
+        self.statement = statement
+
+    def do_next_page(self):
+        self.self.statement[2] = int(self.self.statement[2]) + 10 # TODO: this is broken - please fix
+        zpage = Page(self.self.statement)
+        verse = zpage.page_up()
+
+        # if you did not receive a verse....
+        if len(verse) == 0:
+
+            # construct a count self.statement to retrieve the total number of verses
+            Total_Pages = zpage.count_chapter_verses(
+                self.statement[0], self.statement[1])
+            Total_Chapters = zpage.count_books_chapters(self.statement[0])
+
+            # if your trying to get a chapter that is not within the book. then switch to the next book
+            if int(self.statement[1]) >= Total_Chapters:
+
+                BookTitle = SierraDAO.GetBookId(self.statement[0]) + 1
+                BookTitle = zpage.retrieve_title(BookTitle)
+
+                self.statement[0] = BookTitle
+                self.statement[1] = 1
+                self.statement[2] = 0
+
+                verse = Page(self.statement)
+                verse = verse.page_up()
+            # if the verse we are currently at is equal to or greater than 
+            # the page count "number of verses in our book" then turn the chapter
+            elif self.statement[2] >= Total_Pages:
+
+                self.statement[1] = int(self.statement[1]) + 1
+                self.statement[2] = 0
+                verse = Page(self.statement)
+                verse = verse.page_up()
+
+        for n in verse:
+            zformat = display.wrap(n[0])
+            display.show(zformat)
+
+    def do_last_page(self):
+        self.statement[2] = int(self.self.statement[2]) + 10 # TODO: this is broken - please fix
+        zpage = Page(self.statement)
+        verse = zpage.page_down()
+
+        # if you did not receive a verse....
+        if len(verse) == 0:
+            # construct a count self.statement to retrieve the total number of verses
+            Total_Pages = zpage.count_chapter_verses(
+                self.statement[0], self.statement[1])
+            Total_Chapters = zpage.count_books_chapters(self.statement[0])
+
+            # if your trying to get a chapter that is not within the book, then 
+            # switch to the next book
+            if int(self.statement[1]) >= Total_Chapters:
+                BookTitle = SierraDAO.GetBookId(self.statement[0]) - 1
+                BookTitle = zpage.retrieve_title(BookTitle)
+
+                self.statement[0] = BookTitle
+                self.statement[1] = 1
+                self.statement[2] = 0
+
+                verse = Page(self.statement)
+                verse = verse.down()
+            # if the verse we are currently at is equal to or greater than the 
+            # page count "number of verses in our book" then turn the chapter
+            elif self.statement[2] >= Total_Pages:
+                self.statement[1] = int(self.statement[1]) - 1
+                self.statement[2] = 0
+                verse = Page(self.statement)
+                verse = verse.page_up()
+
+

@@ -20,7 +20,7 @@ import argparse
 from verse import Verse
 from sierra_dao import SierraDAO
 
-from Pagination import Page
+from Pagination import Page, PageOps
 
 display = Verse()
 
@@ -46,17 +46,6 @@ def do_menu(name, prompt, options, level):
             if o[0] == choice:
                 o[2]()
                 break
-
-
-def do_menu_display(name, prompt, options):
-    choice = None
-    while choice != options[-1][0]:
-        print(f"*** {name} ***")
-        for o in options:
-            print(o[0], o[1])
-        choice = input(prompt)
-
-        return choice.upper()
 
 
 def do_book_cv():
@@ -125,87 +114,14 @@ def do_find_cvn(cvn):
 
 
 def turn_page(Statement):
-    options = [
-        ("n", "Next Verse"),
-        ("p", "Previous Verse"),
-        ("q", "Quit Classic Verse"),
-    ]
-    option = None
     Statement = Statement.split()
-    while True:
-        option = do_menu_display("Page Menu", "Option = ", options)
-
-        # next page
-        if option.upper() == "n":
-            Statement[2] = int(Statement[2]) + 10
-            zpage = Page(Statement)
-            verse = zpage.page_up()
-
-            # if you did not receive a verse....
-            if len(verse) == 0:
-
-                # construct a count statement to retrieve the total number of verses
-                Total_Pages = zpage.count_chapter_verses(
-                    Statement[0], Statement[1])
-                Total_Chapters = zpage.count_books_chapters(Statement[0])
-
-                # if your trying to get a chapter that is not within the book. then switch to the next book
-                if int(Statement[1]) >= Total_Chapters:
-
-                    BookTitle = SierraDAO.GetBookId(Statement[0]) + 1
-                    BookTitle = zpage.retrieve_title(BookTitle)
-
-                    Statement[0] = BookTitle
-                    Statement[1] = 1
-                    Statement[2] = 0
-
-                    verse = Page(Statement)
-                    verse = verse.page_up()
-                # if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
-                elif Statement[2] >= Total_Pages:
-
-                    Statement[1] = int(Statement[1]) + 1
-                    Statement[2] = 0
-                    verse = Page(Statement)
-                    verse = verse.page_up()
-
-            for n in verse:
-                zformat = display.wrap(n[0])
-                display.show(zformat)
-
-        # page down
-        elif option.upper() == "p":
-            Statement[2] = int(Statement[2]) - 10
-            zpage = Page(Statement)
-            verse = zpage.page_down()
-
-            # if you did not receive a verse....
-            if len(verse) == 0:
-                # construct a count statement to retrieve the total number of verses
-                Total_Pages = zpage.count_chapter_verses(
-                    Statement[0], Statement[1])
-                Total_Chapters = zpage.count_books_chapters(Statement[0])
-
-                # if your trying to get a chapter that is not within the book. then switch to the next book
-                if int(Statement[1]) >= Total_Chapters:
-                    BookTitle = SierraDAO.GetBookId(Statement[0]) - 1
-                    BookTitle = zpage.retrieve_title(BookTitle)
-
-                    Statement[0] = BookTitle
-                    Statement[1] = 1
-                    Statement[2] = 0
-
-                    verse = Page(Statement)
-                    verse = verse.down()
-                # if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
-                elif Statement[2] >= Total_Pages:
-                    Statement[1] = int(Statement[1]) - 1
-                    Statement[2] = 0
-                    verse = Page(Statement)
-                    verse = verse.page_up()
-
-        elif option.upper() == "q":
-            break
+    ops = PageOps(Statement)
+    options = [
+        ("n", "Next Verse", ops.do_next_page),
+        ("p", "Previous Verse", ops.do_last_page),
+        ("q", "Quit Classic Verse", say_done),
+    ]
+    do_menu("Verse Ref", "Option = ", options, "%")
 
 
 def parse_cmd_line():
@@ -235,17 +151,11 @@ def parse_cmd_line():
             do_list()
             return True
         if args.Sierra != None:
-
             do_find(args.Sierra)
-
             return True
         if len(args.Verse) >= 0:
-
-            do_find_cvn(
-
-                args.Verse
-            )
-            turn_page(args.Verse)
+            do_find_cvn(args.Verse)
+            turn_page(args.Verse) # TODO: Please check this logic
             return True
         return False
     except:
