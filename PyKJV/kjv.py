@@ -19,6 +19,7 @@ import sqlite3
 import argparse
 from verse import Verse
 from sierra_dao import SierraDAO
+import mark_dao
 
 display = Verse()
 
@@ -69,6 +70,59 @@ def do_book_vnum():
         if zverse:
             display.show(display.wrap(zverse["text"]))
 
+def do_read_from():
+    """Print ten verses"""
+    cvn = input("From Verse #: ").strip()
+    if cvn:
+        dao = SierraDAO.GetDAO()
+        loop = True
+        while loop:
+            zverses = dao.get_from_place(cvn)
+            if zverses:
+                for zverse in zverses:
+                    rebuild = list()
+                    for z in zverse:
+                        rebuild.append(list(z))
+                        rebuild.append("~~~~~~~~~~~~~~~~~~~~~~")
+                    display.show(display.wrap(rebuild))
+
+            print("~~~~~~~~~~")
+            cntn = input("Page up, down, mark, or quit: ")
+            if cntn == "up":
+                cvn = int(cvn) + 10
+            if cntn == "down":
+                cvn = int(cvn) - 10
+            if cntn == "quit":
+                loop = False
+            if cntn == "mark":
+                markerone = int(input("Which verses do you want start at?"))
+                markertwo = int(input("Stop at what verse?"))
+                together = mark_dao.BookMark(markerone,markertwo)
+                mark_dao.BookMarks.Sync(together)
+                print("Marked")
+            print("~~~~~~~~~~")
+
+def do_read_bkmrk():
+    
+    loop = True
+    while loop:
+        oblist = mark_dao.BookMarks.Read()
+        for x in oblist:
+            print(x.__dict__)
+        cmd = input("Delete, Update or Quit: ")
+        if cmd == "delete":
+            rem = int(input("Delete ID: "))
+            todelete = mark_dao.BookMark(0,0,rem)
+            mark_dao.BookMarks.Delete(todelete)
+        if cmd == "update":
+            first = int(input("New Start: "))
+            middle = int(input("New End: "))
+            last = int(input("Original ID: "))
+            concatinate = mark_dao.BookMark(first,middle,last)
+            mark_dao.BookMarks.Sync(concatinate)
+        if cmd == "quit":
+            loop = False
+
 
 def do_lookups():
     """ Ways to lookup books & verses """
@@ -76,6 +130,8 @@ def do_lookups():
         ("l", "List Books", do_list),
         ("c", "Classic book:chapter:verse", do_book_cv),
         ("s", "Sierra #", do_book_vnum),
+        ("r", "Read From", do_read_from),
+        ("b", "Manage Bookmarks", do_read_bkmrk),
         ("q", "Quit", say_done),
     ]
     do_menu("Find Verse", "Option = ", options, "?")

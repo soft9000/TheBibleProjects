@@ -183,6 +183,33 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             raise
         return None
 
+    def get_from_place(self, vnum):
+        cmd = f"SELECT ID, Verse FROM sqltblverse Where ID>={vnum} ORDER BY Id LIMIT 10;"
+        try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchall()
+            if zrow:
+                yield zrow
+        except:
+            raise
+        return None
+
+    '''def set_bookmark(self, vnum):
+        
+
+    def get_bookmark(self):
+        """Return all bookmarked verses"""
+        cmd = f"SELECT ID FROM SqlTblVerse WHERE VerseType=1;"
+        try:
+            res = self.conn.execute(cmd)
+            zrow = res.fetchall()
+            if zrow:
+                return zrow
+        except:
+            raise
+        return None
+'''
+
     @staticmethod
     def GetBookId(book_name):
         """Return the database ID from EITHER a book token, or name.

@@ -44,9 +44,7 @@ class BookMarks:
             conn = SierraDAO.Connect()
             res = conn.execute(cmd)
         else:
-            cmd = f"UPDATE UserSelects SET (SierraStart, SierraEnd, UserID) \
-                VALUES ({bmk.m_start}, {bmk.m_end}, {bmk.m_user}) WHERE \
-                    ID = {bmk.m_id};"
+            cmd = f"UPDATE UserSelects SET SierraStart = {bmk.m_start}, SierraEnd = {bmk.m_end}, UserID = {bmk.m_user} WHERE ID = {bmk.m_id};"
             res = conn.execute(cmd)
         if res:
             conn.commit()
@@ -62,11 +60,12 @@ class BookMarks:
         try:
             conn = SierraDAO.Connect()
             for item in items:
-                if not isinstance(items, BookMark):
+                if not isinstance(item, BookMark):
                     return False
                 cmd = f"DELETE FROM UserSelects WHERE ID={item.m_id};"
                 res = conn.execute(cmd)
-            conn.commit()
+            if res:
+                conn.commit()
             return True
         except:
             pass
