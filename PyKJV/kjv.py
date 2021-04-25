@@ -3,7 +3,7 @@
 File: kjv.py
 Problem Domain: Console Application
 Status: WORK IN PROGRESS
-Revision: 0.01
+Revision: 0.02
 
 MISSION
 =======
@@ -20,6 +20,8 @@ import argparse
 from verse import Verse
 from sierra_dao import SierraDAO
 import mark_dao
+
+from Pagination import Page, PageOps
 
 display = Verse()
 
@@ -60,6 +62,8 @@ def do_book_cv():
         if zverse:
             display.show(display.get_verse(zverse))
 
+    turn_page(cvn)
+
 
 def do_book_vnum():
     """ Show a 1's based sierra verse number """
@@ -80,27 +84,27 @@ def do_read_from():
             zverses = dao.get_from_place(cvn)
             if zverses:
                 for zverse in zverses:
-                    rebuild = list()
-                    for z in zverse:
-                        rebuild.append(list(z))
-                        rebuild.append("~~~~~~~~~~~~~~~~~~~~~~")
-                    display.show(display.wrap(rebuild))
+                    display.show(display.wrap(format_num_with_text(zverse[0],zverse[1])))
 
             print("~~~~~~~~~~")
-            cntn = input("Page up, down, mark, or quit: ")
-            if cntn == "up":
+            cntn = input("Page (u)p, (d)own, (m)ark, or (q)uit: ")
+            if cntn == "u":
                 cvn = int(cvn) + 10
-            if cntn == "down":
+            if cntn == "d":
                 cvn = int(cvn) - 10
-            if cntn == "quit":
+            if cntn == "q":
                 loop = False
-            if cntn == "mark":
-                markerone = int(input("Which verses do you want start at?"))
-                markertwo = int(input("Stop at what verse?"))
+            if cntn == "m":
+                markerone = int(input("Which verses do you want start at? "))
+                markertwo = int(input("Stop at what verse?" ))
                 together = mark_dao.BookMark(markerone,markertwo)
                 mark_dao.BookMarks.Sync(together)
                 print("Marked")
             print("~~~~~~~~~~")
+
+def format_num_with_text(num, txt):
+    result = str(num) + ': ' + txt
+    return result
 
 def do_read_bkmrk():
     
@@ -109,18 +113,18 @@ def do_read_bkmrk():
         oblist = mark_dao.BookMarks.Read()
         for x in oblist:
             print(x.__dict__)
-        cmd = input("Delete, Update or Quit: ")
-        if cmd == "delete":
+        cmd = input("(d)elete, (u)pdate or (q)uit: ")
+        if cmd == "d":
             rem = int(input("Delete ID: "))
             todelete = mark_dao.BookMark(0,0,rem)
             mark_dao.BookMarks.Delete(todelete)
-        if cmd == "update":
+        if cmd == "u":
             first = int(input("New Start: "))
             middle = int(input("New End: "))
             last = int(input("Original ID: "))
             concatinate = mark_dao.BookMark(first,middle,last)
             mark_dao.BookMarks.Sync(concatinate)
-        if cmd == "quit":
+        if cmd == "q":
             loop = False
 
 
@@ -160,20 +164,32 @@ def do_find_cvn(cvn):
             print(f"(Verse '{cvn}' not found.)")
             return
     dao = SierraDAO.GetDAO()
-    s_num = dao.get_sierra_num(SierraDAO.GetBookId(cvn[0]), int(cvn[1]), int(cvn[2]))
+    s_num = dao.get_sierra_num(SierraDAO.GetBookId(
+        cvn[0]), int(cvn[1]), int(cvn[2]))
     display.show(display.get_verse(s_num))
+
+
+def turn_page(Statement):
+    Statement = Statement.split()
+    ops = PageOps(Statement)
+    options = [
+        ("n", "Next Verse", ops.do_next_page),
+        ("p", "Previous Verse", ops.do_last_page),
+        ("q", "Quit Classic Verse", say_done),
+    ]
+    do_menu("Verse Ref", "Option = ", options, "%")
 
 
 def parse_cmd_line():
     """ Return True if a commnd-line option was run, else False """
-    HelpInformation = "kjv.py: Search, bookmark & browse the Bible."
-    parse = argparse.ArgumentParser(usage="", description=HelpInformation)
-    
+    help_information = "kjv.py: Search, bookmark & browse the Bible."
+    parse = argparse.ArgumentParser(usage="", description=help_information)
+
     parse.add_argument(
-        "-s", "--Sierra",type = int,metavar="", help="Find verse by #")
-        # I am changing this so that it can take a line of text P.S. it will turn input into a list
+        "-s", "--Sierra", type=int, metavar="", help="Find verse by #")
+    # Returns a list
     parse.add_argument(
-        "-v", "--Verse",metavar="",nargs="*", help="Find verse by chapter:book:verse"
+        "-v", "--Verse", metavar="", nargs="*", help="Find verse by chapter:book:verse"
     )
     Parser = parse.add_mutually_exclusive_group()
     Parser.add_argument(
@@ -191,26 +207,24 @@ def parse_cmd_line():
             do_list()
             return True
         if args.Sierra != None:
-            
             do_find(args.Sierra)
             return True
         if len(args.Verse) >= 0:
-            
-            do_find_cvn(
-                args.Verse
-            )
+            do_find_cvn(args.Verse)
+            turn_page(args.Verse) # TODO: Please check this logic
             return True
         return False
     except:
         return False
 
 
-if not parse_cmd_line():
-    options = [
-        ("r", "Random Verse", do_random),
-        ("b", "Book List", do_list),
-        ("s", "Show Verse", do_lookups),
-        ("q", "Quit Program", say_done),
-    ]
-    do_menu("Main Menu", "Option = ", options, "#")
-print(".")
+if __name__ == '__main__':
+    if not parse_cmd_line():
+        options = [
+            ("r", "Random Verse", do_random),
+            ("b", "Book List", do_list),
+            ("s", "Show Verse", do_lookups),
+            ("q", "Quit Program", say_done),
+        ]
+        do_menu("Main Menu", "Option = ", options, "#")
+    print(".")

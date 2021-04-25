@@ -39,23 +39,11 @@ class Verse:
     def wrap(self, line) -> list():
         if not line:
             line = "(none)"
-        if isinstance(line, list):
-            results = list()
-            replaceable = "()'[]"
-            for w in self._wrap.wrap(str(line)):
-                for r in replaceable:
-                    w = w.replace(r,"")
-                    w = w.replace(", ~~~~~~~~~~~~~~~~~~~~~~,","\n |")
-                    w = w.replace("~~~~~~~~~~~~~~~~~~~~~~,","\n |")
-                rline = self._mask.format(w)
-                results.append(rline)
-            return results
-        else:
-            results = list()
-            for w in self._wrap.wrap(line):
-                rline = self._mask.format(w)
-                results.append(rline)
-            results.append("\n")
+        results = list()
+        for w in self._wrap.wrap(line):
+            rline = self._mask.format(w)
+            results.append(rline)
+        results.append("\n")
         return results
 
     def list_books(self) -> list():

@@ -187,9 +187,10 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         cmd = f"SELECT ID, Verse FROM sqltblverse Where ID>={vnum} ORDER BY Id LIMIT 10;"
         try:
             res = self.conn.execute(cmd)
-            zrow = res.fetchall()
-            if zrow:
+            zrow = res.fetchone()
+            while zrow:
                 yield zrow
+                zrow = res.fetchone()
         except:
             raise
         return None
@@ -236,6 +237,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
             except Exception as ex:
                 print(ex)
         return False
+        
     
     @staticmethod
     def Connect(bSaints=False):
