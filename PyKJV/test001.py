@@ -22,6 +22,6 @@ if __name__ == "__main__":
     zbooks = list(zdict)
     assert len(zbooks) == 81
     print("Testing Success!")
-    bmk = mark_dao.BookMark(15,99)
+    bmk = mark_dao.BookMark(15, 99)
     mark_dao.BookMarks.Sync(bmk)
     # TODO: Test the BookMarks class signature - Full C.R.U.D ops.

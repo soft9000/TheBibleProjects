@@ -195,11 +195,6 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         """Is the CLASSIC reference valid? (string plus two numbers.)
         Return dictionary if found, else False."""
         cols = cvn.split(":")
-        if type(cols) == type(list):
-            pass
-        else:
-            cols = cvn.split()
-
         if len(cols) is 3:
             try:
                 chapt = int(cols[1])
@@ -213,7 +208,6 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
                     return {"book": book, "chapter": chapt, "verse": verse}
             except Exception as ex:
                 print(ex)
-
         return False
         
     
