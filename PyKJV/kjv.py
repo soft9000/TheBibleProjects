@@ -3,7 +3,7 @@
 File: kjv.py
 Problem Domain: Console Application
 Status: WORK IN PROGRESS
-Revision: 0.01
+Revision: 0.02
 
 MISSION
 =======
@@ -46,16 +46,18 @@ def do_menu(name, prompt, options, level):
             if o[0] == choice:
                 o[2]()
                 break
-def Do_menu_Display(name, prompt, options):
+
+
+def do_menu_display(name, prompt, options):
     choice = None
     while choice != options[-1][0]:
         print(f"*** {name} ***")
         for o in options:
             print(o[0], o[1])
         choice = input(prompt)
-        
+
         return choice.upper()
-        
+
 
 def do_book_cv():
     """ Show a book:chapter:verse """
@@ -69,8 +71,9 @@ def do_book_cv():
             zset["book"], zset["chapter"], zset["verse"])
         if zverse:
             display.show(display.get_verse(zverse))
-    
-    Turn_Page(cvn)
+
+    turn_page(cvn)
+
 
 def do_book_vnum():
     """ Show a 1's based sierra verse number """
@@ -116,37 +119,36 @@ def do_find_cvn(cvn):
             print(f"(Verse '{cvn}' not found.)")
             return
     dao = SierraDAO.GetDAO()
-    s_num = dao.get_sierra_num(SierraDAO.GetBookId(cvn[0]), int(cvn[1]), int(cvn[2]))
+    s_num = dao.get_sierra_num(SierraDAO.GetBookId(
+        cvn[0]), int(cvn[1]), int(cvn[2]))
     display.show(display.get_verse(s_num))
 
-def Turn_Page(Statement):
-    
+
+def turn_page(Statement):
     options = [
-        ("N", "Next Verse"),
-        ("P", "Previous Verse"),
-        ("Q", "Quit Classic Verse"),
+        ("n", "Next Verse"),
+        ("p", "Previous Verse"),
+        ("q", "Quit Classic Verse"),
     ]
     option = None
-    
     Statement = Statement.split()
-
     while True:
-        option = Do_menu_Display("Page Menu", "Option = ", options)
-        
-        #next page
-        if option.upper() == "N":
+        option = do_menu_display("Page Menu", "Option = ", options)
+
+        # next page
+        if option.upper() == "n":
             Statement[2] = int(Statement[2]) + 10
             zpage = Page(Statement)
-            verse = zpage.PageUp()
-            
-            #if you`ve you didnt receive a verse....
+            verse = zpage.page_up()
+
+            # if you did not receive a verse....
             if len(verse) == 0:
-                
+
                 # construct a count statement to retrieve the total number of verses
-                Total_Pages = zpage.Count_Chapter_Verses(Statement[0],Statement[1])
-                Total_Chapters = zpage.Count_Books_Chapters(Statement[0])
-                
-                
+                Total_Pages = zpage.count_chapter_verses(
+                    Statement[0], Statement[1])
+                Total_Chapters = zpage.count_books_chapters(Statement[0])
+
                 # if your trying to get a chapter that is not within the book. then switch to the next book
                 if int(Statement[1]) >= Total_Chapters:
 
@@ -158,38 +160,34 @@ def Turn_Page(Statement):
                     Statement[2] = 0
 
                     verse = Page(Statement)
-                    verse = verse.PageUp()
-                #if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
+                    verse = verse.page_up()
+                # if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
                 elif Statement[2] >= Total_Pages:
 
                     Statement[1] = int(Statement[1]) + 1
                     Statement[2] = 0
                     verse = Page(Statement)
-                    verse = verse.PageUp()
-                
-                
+                    verse = verse.page_up()
+
             for n in verse:
                 zformat = display.wrap(n[0])
                 display.show(zformat)
-            
-        #page down
-        elif option.upper() == "P":
 
+        # page down
+        elif option.upper() == "p":
             Statement[2] = int(Statement[2]) - 10
             zpage = Page(Statement)
-            verse = zpage.PageDown()
-            
-            #if you`ve you didnt receive a verse....
+            verse = zpage.page_down()
+
+            # if you did not receive a verse....
             if len(verse) == 0:
-                
                 # construct a count statement to retrieve the total number of verses
-                Total_Pages = zpage.Count_Chapter_Verses(Statement[0],Statement[1])
-                Total_Chapters = zpage.Count_Books_Chapters(Statement[0])
-                
-                
+                Total_Pages = zpage.count_chapter_verses(
+                    Statement[0], Statement[1])
+                Total_Chapters = zpage.count_books_chapters(Statement[0])
+
                 # if your trying to get a chapter that is not within the book. then switch to the next book
                 if int(Statement[1]) >= Total_Chapters:
-
                     BookTitle = SierraDAO.GetBookId(Statement[0]) - 1
                     BookTitle = zpage.retrieve_title(BookTitle)
 
@@ -199,27 +197,27 @@ def Turn_Page(Statement):
 
                     verse = Page(Statement)
                     verse = verse.down()
-                #if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
+                # if the verse we are currently at is equal to or greater than the page count "number of verses in our book" then turn the chapter
                 elif Statement[2] >= Total_Pages:
-
                     Statement[1] = int(Statement[1]) - 1
                     Statement[2] = 0
                     verse = Page(Statement)
-                    verse = verse.PageUp()
-            
-        elif option.upper() == "Q":
+                    verse = verse.page_up()
+
+        elif option.upper() == "q":
             break
+
 
 def parse_cmd_line():
     """ Return True if a commnd-line option was run, else False """
-    HelpInformation = "kjv.py: Search, bookmark & browse the Bible."
-    parse = argparse.ArgumentParser(usage="", description=HelpInformation)
-    
+    help_information = "kjv.py: Search, bookmark & browse the Bible."
+    parse = argparse.ArgumentParser(usage="", description=help_information)
+
     parse.add_argument(
-        "-s", "--Sierra",type = int,metavar="", help="Find verse by #")
-        #Returns a list
+        "-s", "--Sierra", type=int, metavar="", help="Find verse by #")
+    # Returns a list
     parse.add_argument(
-        "-v", "--Verse",metavar="",nargs="*", help="Find verse by chapter:book:verse"
+        "-v", "--Verse", metavar="", nargs="*", help="Find verse by chapter:book:verse"
     )
     Parser = parse.add_mutually_exclusive_group()
     Parser.add_argument(
@@ -237,29 +235,30 @@ def parse_cmd_line():
             do_list()
             return True
         if args.Sierra != None:
-            
+
             do_find(args.Sierra)
-            
+
             return True
         if len(args.Verse) >= 0:
-            
+
             do_find_cvn(
-                
+
                 args.Verse
             )
-            Turn_Page(args.Verse)
+            turn_page(args.Verse)
             return True
         return False
     except:
         return False
 
 
-if not parse_cmd_line():
-    options = [
-        ("r", "Random Verse", do_random),
-        ("b", "Book List", do_list),
-        ("s", "Show Verse", do_lookups),
-        ("q", "Quit Program", say_done),
-    ]
-    do_menu("Main Menu", "Option = ", options, "#")
-print(".")
+if __name__ == '__main__':
+    if not parse_cmd_line():
+        options = [
+            ("r", "Random Verse", do_random),
+            ("b", "Book List", do_list),
+            ("s", "Show Verse", do_lookups),
+            ("q", "Quit Program", say_done),
+        ]
+        do_menu("Main Menu", "Option = ", options, "#")
+    print(".")
