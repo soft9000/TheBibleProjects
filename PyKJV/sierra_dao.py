@@ -169,7 +169,7 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
     def get_book_id(self, book_name):
         """Return the database ID from EITHER a book token, or name.
         Return None if not found / error."""
-        if len(book_name) < 5:
+        if len(book_name) < 5: 
             book_name = self.get_book_title(book_name)
             if not book_name:
                 return None
@@ -223,19 +223,25 @@ FROM SqlTblVerse AS V JOIN SqlBooks as B WHERE (B.ID=BookID AND {zmatch}) ORDER 
         """Is the CLASSIC reference valid? (string plus two numbers.)
         Return dictionary if found, else False."""
         cols = cvn.split(":")
-        if len(cols) is 3:
-            try:
-                chapt = int(cols[1])
-                if chapt < 1:
-                    return False
-                verse = int(cols[2])
-                if verse < 1:
-                    return False
-                book = SierraDAO.GetBookId(cols[0])
-                if book:
-                    return {"book": book, "chapter": chapt, "verse": verse}
-            except Exception as ex:
-                print(ex)
+        if type(cols) == list and len(cols) == 3:
+            pass
+        else:
+            cols = cvn.split()
+
+        
+        try:
+            chapt = int(cols[1])
+            if chapt < 1:
+                return False
+            verse = int(cols[2])
+            if verse < 1:
+                return False
+            book = SierraDAO.GetBookId(cols[0])
+            if book:
+                return {"book": book, "chapter": chapt, "verse": verse}
+        except Exception as ex:
+            print(ex)
+
         return False
         
     

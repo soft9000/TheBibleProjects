@@ -2,6 +2,7 @@ if __name__ == "__main__":
     from verse import Verse
     from sierra_dao import SierraDAO
     import mark_dao
+    from kjv.py import Turn_Page
 
     assert SierraDAO.ParseClassicVerse("Genesis:1:1")
     assert SierraDAO.ParseClassicVerse("gEnesis:1:1")
