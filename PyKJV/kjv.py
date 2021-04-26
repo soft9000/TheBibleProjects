@@ -21,6 +21,8 @@ from verse import Verse
 from sierra_dao import SierraDAO
 import mark_dao
 
+from menu import do_menu
+
 from Pagination import Page, PageOps
 
 display = Verse()
@@ -29,24 +31,6 @@ display = Verse()
 def say_done():
     """ What we see whenever a menu is done. """
     print("(exit)")
-
-
-def do_menu(name, prompt, options, level):
-    """ The menu loop - nice for nesting 'till we're done. """
-    choice = None
-    while choice != options[-1][0]:
-        print(f"*** {name} ***")
-        for o in options:
-            print(o[0], o[1])
-        choice = input(prompt)
-        if not choice:
-            continue
-        choice = choice[0].lower()
-        print(f">> {choice}")
-        for o in options:
-            if o[0] == choice:
-                o[2]()
-                break
 
 
 def do_book_cv():
@@ -74,6 +58,7 @@ def do_book_vnum():
         if zverse:
             display.show(display.wrap(zverse["text"]))
 
+
 def do_read_from():
     """Print ten verses"""
     cvn = input("From Verse #: ").strip()
@@ -84,10 +69,12 @@ def do_read_from():
             zverses = dao.get_from_place(cvn)
             if zverses:
                 for zverse in zverses:
-                    display.show(display.wrap(format_num_with_text(zverse[0],zverse[1])))
+                    display.show(display.wrap(
+                        format_num_with_text(zverse[0], zverse[1])))
 
             print("~~~~~~~~~~")
-            cntn = input("Page (u)p, (d)own, (m)ark, (r)eview marks, or (q)uit: ")
+            cntn = input(
+                "Page (u)p, (d)own, (m)ark, (r)eview marks, or (q)uit: ")
             if cntn == "u":
                 cvn = int(cvn) + 10
             if cntn == "d":
@@ -96,8 +83,8 @@ def do_read_from():
                 loop = False
             if cntn == "m":
                 markerone = int(input("Which verses do you want start at? "))
-                markertwo = int(input("Stop at what verse?" ))
-                together = mark_dao.BookMark(markerone,markertwo)
+                markertwo = int(input("Stop at what verse?"))
+                together = mark_dao.BookMark(markerone, markertwo)
                 mark_dao.BookMarks.Sync(together)
                 print("Marked")
             if cntn == "r":
@@ -105,12 +92,14 @@ def do_read_from():
                 break
             print("~~~~~~~~~~")
 
+
 def format_num_with_text(num, txt):
     result = str(num) + ': ' + txt
     return result
 
+
 def do_read_bkmrk():
-    
+
     loop = True
     while loop:
         oblist = mark_dao.BookMarks.Read()
@@ -119,13 +108,13 @@ def do_read_bkmrk():
         cmd = input("(d)elete, (u)pdate, (r)ead from or (q)uit: ")
         if cmd == "d":
             rem = int(input("Delete ID: "))
-            todelete = mark_dao.BookMark(0,0,rem)
+            todelete = mark_dao.BookMark(0, 0, rem)
             mark_dao.BookMarks.Delete(todelete)
         if cmd == "u":
             first = int(input("New Start: "))
             middle = int(input("New End: "))
             last = int(input("Original ID: "))
-            concatinate = mark_dao.BookMark(first,middle,last)
+            concatinate = mark_dao.BookMark(first, middle, last)
             mark_dao.BookMarks.Sync(concatinate)
         if cmd == "q":
             loop = False
@@ -217,7 +206,7 @@ def parse_cmd_line():
             return True
         if len(args.Verse) >= 0:
             do_find_cvn(args.Verse)
-            turn_page(args.Verse) # TODO: Please check this logic
+            turn_page(args.Verse)  # TODO: Please check this logic
             return True
         return False
     except:
