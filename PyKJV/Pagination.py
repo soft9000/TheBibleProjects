@@ -1,14 +1,15 @@
 import sqlite3
 from sierra_dao import SierraDAO
 from verse import Verse
+import abs_page
 
-
-class Page:
+class Page():
 
     # cursor is the result of an sql statement
     def __init__(self, statement):
         self.statement = statement
         self.cmd = "SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID}) LIMIT 10;"
+        #i could make cmd not have a "where" statement and add where clauses as needed
 
     def retrieve_title(self, ID):
         cmd = f"select Book from SqlBooks where ID = {ID};"
@@ -85,14 +86,15 @@ class Page:
         pass
 
 
-class PageOps():
+class PageOps(abs_page.AbsPage):
     ''' Here is a way to use the main parser '''
-
+    
     def __init__(self, statement):
         self.statement = statement
 
     def do_next_page(self):
-        self.statement[2] = int(self.statement[2]) + 10 # TODO: this is broken - please fix
+        display = Verse()
+        self.statement[2] = int(self.statement[2]) + 10 
         zpage = Page(self.statement)
         verse = zpage.page_up()
 
@@ -130,7 +132,8 @@ class PageOps():
             display.show(zformat)
 
     def do_last_page(self):
-        self.statement[2] = int(self.statement[2]) + 10 # TODO: this is broken - please fix
+        display = Verse()
+        self.statement[2] = int(self.statement[2]) - 10 
         zpage = Page(self.statement)
         verse = zpage.page_down()
 
@@ -160,5 +163,20 @@ class PageOps():
                 self.statement[2] = 0
                 verse = Page(self.statement)
                 verse = verse.page_up()
+
+    def get_page(self) -> list:
+        '''returns a list of verses based on a given statement'''
+        Statement = self.statement
+        DAO = SierraDAO.GetDAO()
+        cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID})'
+        
+        Parsed_Statement = SierraDAO.ParseClassicVerse(Statement)
+        cmd = cmd.format(Z_ID=Parsed_Statement["book"],BookID=Parsed_Statement["chapter"],VerseID=Parsed_Statement["verse"])
+
+        verses = DAO.conn.execute(cmd)
+
+        return verses
+
+
 
 
