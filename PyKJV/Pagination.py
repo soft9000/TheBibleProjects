@@ -2,6 +2,7 @@ import sqlite3
 from sierra_dao import SierraDAO
 from verse import Verse
 import abs_page
+from menu import do_menu
 
 class Page():
 
@@ -26,8 +27,8 @@ class Page():
         for line1 in RSQL:
             for line in line1:
                 return int(line)
-
-    def count_chapter_verses(self, book_ID, Chapter_ID):
+    
+    def count_chapter_verses(self, book_ID, Chapter_ID):      
         book_ID = SierraDAO.GetBookId(book_ID)
         cmd = "select COUNT(BookVerseID) from SqlTblVerse where (BookID = {Z_ID} AND BookChapterID={BookID});"
         cmd = cmd.format(Z_ID=book_ID, BookID=Chapter_ID)
@@ -89,8 +90,12 @@ class Page():
 class PageOps(abs_page.AbsPage):
     ''' Here is a way to use the main parser '''
     
-    def __init__(self, statement):
+    def __init__(self, statement,Page_Size = 10):
         self.statement = statement
+        #when you receive a statement. then find out how many verses it has in total
+        self.Max_Size = Page(statement).count_chapter_verses(statement[0],statement[1])
+        #used for returning paginations "determined by the user"
+        self.Page_Size = Page_Size
 
     def do_next_page(self):
         display = Verse()
@@ -102,6 +107,7 @@ class PageOps(abs_page.AbsPage):
         if len(verse) == 0:
 
             # construct a count self.statement to retrieve the total number of verses
+            # see about replacing these with properties
             Total_Pages = zpage.count_chapter_verses(
                 self.statement[0], self.statement[1])
             Total_Chapters = zpage.count_books_chapters(self.statement[0])
@@ -163,20 +169,62 @@ class PageOps(abs_page.AbsPage):
                 self.statement[2] = 0
                 verse = Page(self.statement)
                 verse = verse.page_up()
-
+    
     def get_page(self) -> list:
         '''returns a list of verses based on a given statement'''
         Statement = self.statement
         DAO = SierraDAO.GetDAO()
-        cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID})'
+        cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID}) LIMIT 10;'
         
-        Parsed_Statement = SierraDAO.ParseClassicVerse(Statement)
-        cmd = cmd.format(Z_ID=Parsed_Statement["book"],BookID=Parsed_Statement["chapter"],VerseID=Parsed_Statement["verse"])
+        #Parsed_Statement = SierraDAO.ParseClassicVerse(Statement)
+        cmd = cmd.format(Z_ID=Statement[0],BookID=Statement[1],VerseID=Statement[2])
 
         verses = DAO.conn.execute(cmd)
 
         return verses
 
+    def do_display(self):
+        for line in get_page():
+            print('@', line)
+
+    def do_lineadv(self):
+        abs_page.line_dec()
+        self.statement[2] = abs_page.line_num()
+        do_display()
+        
+
+    def do_pageadv(self):
+        abs_page.page_dec()
+        do_display()
+        
+
+    def do_linedec(self):
+        abs_page.line_inc()
+        do_display()
+        
+
+    def do_pagedec(self):
+        abs_page.page_inc()
+        do_display()
+        
+
+    def do_goto(self):
+        which = input("Go to: ")
+        if which.isnumeric():
+            abs_page.set_line(int(which))
+            do_display()
+        else:
+            print("meh...")
 
 
-
+    def display_options(self):
+        options = [
+        ("a", "lnup", do_linedec),
+        ("z", "pgup", do_pagedec),
+        ("s", "lndn", do_lineadv),
+        ("x", "pgdn", do_pageadv),
+        ("g", "goto", do_goto),
+        ("q", "Quit Program", quit),
+    ]
+        do_display()
+        do_menu("Main Menu", "Option = ", options, "#")
