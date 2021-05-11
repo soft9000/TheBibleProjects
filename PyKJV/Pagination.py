@@ -91,11 +91,16 @@ class PageOps(abs_page.AbsPage):
     ''' Here is a way to use the main parser '''
     
     def __init__(self, statement,Page_Size = 10):
+        # i need to replace statement with the book,chapter,verse equivilent
         self.statement = statement
+
+        self.book = statement[0]
+        self.chapter = statement[1]
+
         #when you receive a statement. then find out how many verses it has in total
         self.Max_Size = Page(statement).count_chapter_verses(statement[0],statement[1])
         #used for returning paginations "determined by the user"
-        self.Page_Size = Page_Size
+        super().__init__(self.Max_Size,Page_Size,statement[2])
 
     def do_next_page(self):
         display = Verse()
@@ -171,60 +176,68 @@ class PageOps(abs_page.AbsPage):
                 verse = verse.page_up()
     
     def get_page(self) -> list:
-        '''returns a list of verses based on a given statement'''
+        '''returns a list of verses based on a given list'''
+        if self._line_num < 0:
+            return list()
+
         Statement = self.statement
         DAO = SierraDAO.GetDAO()
-        cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={BookID} AND BookVerseID<={VerseID}) LIMIT 10;'
+        Book_ID = DAO.get_book_id(self.book)
+        # this is a legitimate pagination statement
+        cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={ChapterID}) ORDER BY bookID LIMIT 10 OFFSET {VerseID};'
         
         #Parsed_Statement = SierraDAO.ParseClassicVerse(Statement)
-        cmd = cmd.format(Z_ID=Statement[0],BookID=Statement[1],VerseID=Statement[2])
+        cmd = cmd.format(Z_ID=Book_ID,ChapterID=self.chapter,VerseID=self._line_num - 1)
 
         verses = DAO.conn.execute(cmd)
-
-        return verses
+        all_verse = verses.fetchmany(10)
+        return all_verse
 
     def do_display(self):
-        for line in get_page():
+        for line in self.get_page():
             print('@', line)
 
     def do_lineadv(self):
-        abs_page.line_dec()
-        self.statement[2] = abs_page.line_num()
-        do_display()
+        
+        self.line_inc()
+        self.do_display()
         
 
     def do_pageadv(self):
-        abs_page.page_dec()
-        do_display()
+        self.page_inc()
+        self.do_display()
         
 
     def do_linedec(self):
-        abs_page.line_inc()
-        do_display()
+        # displayed verses not matching up with verse lines
+        self.line_dec()
+        self.do_display()
+        #print(self._line_num)
         
 
     def do_pagedec(self):
-        abs_page.page_inc()
-        do_display()
+        self.page_dec()
+        
+        self.do_display()
         
 
     def do_goto(self):
         which = input("Go to: ")
         if which.isnumeric():
-            abs_page.set_line(int(which))
-            do_display()
+            self.set_line(int(which))
+            self.do_display()
         else:
             print("meh...")
 
 
     def display_options(self):
         options = [
-        ("a", "lnup", do_linedec),
-        ("z", "pgup", do_pagedec),
-        ("s", "lndn", do_lineadv),
-        ("x", "pgdn", do_pageadv),
-        ("g", "goto", do_goto),
+        ("a", "lnup", self.do_lineadv),
+        ("z", "pgup", self.do_pageadv),
+        ("s", "lndn", self.do_linedec),
+        ("x", "pgdn", self.do_pagedec),
+        ("g", "goto", self.do_goto),
         ("q", "Quit Program", quit),
     ]
-        do_display()
+        self.do_display()
         do_menu("Main Menu", "Option = ", options, "#")
