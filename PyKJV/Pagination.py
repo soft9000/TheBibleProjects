@@ -92,10 +92,15 @@ class PageOps(abs_page.AbsPage):
     
     def __init__(self, statement,Page_Size = 10):
         # i need to replace statement with the book,chapter,verse equivilent
+        #it is very possible that the "do" methods will become artifacts
         self.statement = statement
 
         self.book = statement[0]
         self.chapter = statement[1]
+
+        self.Select = "select {} "
+        self.From = " From {} "
+        self.Where = "Where "
 
         #when you receive a statement. then find out how many verses it has in total
         self.Max_Size = Page(statement).count_chapter_verses(statement[0],statement[1])
@@ -174,7 +179,27 @@ class PageOps(abs_page.AbsPage):
                 self.statement[2] = 0
                 verse = Page(self.statement)
                 verse = verse.page_up()
-    
+    def Next_Chapter(self):
+        """resets the chapter and verse value "represent the beggining of the next chapter in a book" """
+        self.chapter = self.chapter + 1
+        self.line_num(1)
+
+    def EndOfPage(self):
+        """if your verse is greater than the maximum pages in a chapter then go to the next chapter"""
+        if self.verse > self.Max_Size:
+            Next_Chapter()
+
+     # should this be sent to the sierra_dao object?
+    def constr_where(self, *args):
+        cmd = self.Where
+        
+        for items in args:
+            cmd +=(f'{items} ')
+            if args.index(items) < len(args) - 1:
+                cmd += 'AND '
+
+        return cmd
+
     def get_page(self) -> list:
         '''returns a list of verses based on a given list'''
         if self._line_num < 0:
@@ -184,10 +209,13 @@ class PageOps(abs_page.AbsPage):
         DAO = SierraDAO.GetDAO()
         Book_ID = DAO.get_book_id(self.book)
         # this is a legitimate pagination statement
-        cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={ChapterID}) ORDER BY bookID LIMIT 10 OFFSET {VerseID};'
+        #cmd = 'SELECT Verse FROM SqlTblVerse WHERE (BookID = {Z_ID} AND BookChapterID={ChapterID}) ORDER BY bookID LIMIT 10 OFFSET {VerseID};'
+        cmd = self.Select.format("Verse")
+        cmd += self.From.format("SqlTblVerse")
+        cmd += self.constr_where(f'BookID = {Book_ID}',f'BookChapterID= {self.chapter}')
+        cmd += f'ORDER BY bookID LIMIT 10 OFFSET {self._line_num - 1};'
         
-        #Parsed_Statement = SierraDAO.ParseClassicVerse(Statement)
-        cmd = cmd.format(Z_ID=Book_ID,ChapterID=self.chapter,VerseID=self._line_num - 1)
+        #cmd = cmd.format(Z_ID=Book_ID,ChapterID=self.chapter,VerseID=self._line_num - 1)
 
         verses = DAO.conn.execute(cmd)
         all_verse = verses.fetchmany(10)
@@ -195,7 +223,8 @@ class PageOps(abs_page.AbsPage):
 
     def do_display(self):
         for line in self.get_page():
-            print('@', line)
+            for line2 in line:
+                print('@', line2)
 
     def do_lineadv(self):
         
@@ -209,10 +238,10 @@ class PageOps(abs_page.AbsPage):
         
 
     def do_linedec(self):
-        # displayed verses not matching up with verse lines
+        
         self.line_dec()
         self.do_display()
-        #print(self._line_num)
+        
         
 
     def do_pagedec(self):
@@ -241,3 +270,4 @@ class PageOps(abs_page.AbsPage):
     ]
         self.do_display()
         do_menu("Main Menu", "Option = ", options, "#")
+        self.EndOfPage()
